@@ -49,7 +49,7 @@
 
 ### 8. How is the automatic inventory update reflected in the design when a sale is registered? Which classes are involved?
 * **Design & Workflow:** When `SaleService.registerSale(...)` is executed, it iterates through the products in the sale, calls `ProductService.updateStock(...)` to deduct sold quantities, and then persists both updated inventory and the new sale record.
-* **Involved Classes:** `SaleService`, `ProductService`, `persistence`, `SaleRepository`, and domain models `Sale` and `Product`.
+* **Involved Classes:** `SaleService`, `ProductService`, `ProductRepository`, `SaleRepository`, and domain models `Sale` and `Product`.
 
 ---
 
@@ -57,7 +57,7 @@
 
 ### 9. What type of classes belong to each of the four layers? What criterion determines where a class belongs?
 1. **Model (`com.gamezone.model`):** Pure domain entities holding data, state, and domain business rules (`Person`, `Customer`, `Seller`, `Product`, `Videogame`, `Console`, `Sale`).
-2. **Persistence (`com.gamezone.persistence`):** Data Access Objects responsible exclusively for reading from and writing to storage files (`PersonRepository`, `persistence`, `SaleRepository`).
+2. **Persistence (`com.gamezone.persistence`):** Data Access Objects responsible exclusively for reading from and writing to storage files (`PersonRepository`, `ProductRepository`, `SaleRepository`).
 3. **Services (`com.gamezone.service`):** Business logic orchestrators validating rules, coordinating transactions between models and repositories (`PersonService`, `ProductService`, `SaleService`).
 4. **User Interface (`com.gamezone.ui`):** Presentation components handling user input, console menus, and output formatting (`ConsoleUI`).
 * **Criterion:** Single Responsibility Principle (SRP) and Separation of Concerns.
