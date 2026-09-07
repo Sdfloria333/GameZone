@@ -87,6 +87,10 @@ public class ProductService {
      * @return the product if found, or null if no product matches the identifier
      */
     public Product findProductById(String id) {
+        if (id == null || id.isBlank()) {
+            throw new IllegalArgumentException("Product ID cannot be null or empty");
+        }
+
         List<Product> products = productRepository.findAll();
         for (Product product : products) {
             if (product.getId().equals(id)) {
