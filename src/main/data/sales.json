@@ -1,0 +1,16 @@
+[
+  {
+    "saleId": "1001",
+    "date": "2026-09-07 09:28:36",
+    "customerId": "10000",
+    "sellerId": "100",
+    "details": [
+      {
+        "productId": "1",
+        "quantity": 2,
+        "unitPrice": 100.0
+      }
+    ],
+    "total": 200.0
+  }
+]

@@ -1,7 +1,12 @@
 package com.gamezone.ui;
 
+import com.gamezone.model.Console;
+import com.gamezone.model.Customer;
+import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
 import com.gamezone.model.SaleDetail;
+import com.gamezone.model.Seller;
+import com.gamezone.model.Videogame;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.SaleService;
@@ -79,32 +84,128 @@ public class ConsoleUI {
 
     private void registerVideogame() {
         System.out.println("\n--- Register Videogame ---");
-        System.out.println("Feature handled by ProductService.");
+        try {
+            System.out.print("Enter ID: ");
+            String id = scanner.nextLine();
+
+            System.out.print("Enter Title: ");
+            String title = scanner.nextLine();
+
+            System.out.print("Enter Price: ");
+            double price = Double.parseDouble(scanner.nextLine());
+
+            System.out.print("Enter Stock Quantity: ");
+            int stockQuantity = Integer.parseInt(scanner.nextLine());
+
+            System.out.print("Enter Platform: ");
+            String platform = scanner.nextLine();
+
+            System.out.print("Enter Genre: ");
+            String genre = scanner.nextLine();
+
+            System.out.print("Enter Age Rating: ");
+            String ageRating = scanner.nextLine();
+
+            Videogame videogame = new Videogame(id, title, price, stockQuantity, platform, genre, ageRating);
+            productService.registerProduct(videogame);
+            System.out.println("Videogame registered successfully!");
+
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Price and Stock Quantity must be valid numbers.");
+        }
     }
 
     private void registerConsole() {
         System.out.println("\n--- Register Console ---");
-        System.out.println("Feature handled by ProductService.");
+        try {
+            System.out.print("Enter ID: ");
+            String id = scanner.nextLine();
+
+            System.out.print("Enter Title: ");
+            String title = scanner.nextLine();
+
+            System.out.print("Enter Price: ");
+            double price = Double.parseDouble(scanner.nextLine());
+
+            System.out.print("Enter Stock Quantity: ");
+            int stockQuantity = Integer.parseInt(scanner.nextLine());
+
+            System.out.print("Enter Brand: ");
+            String brand = scanner.nextLine();
+
+            System.out.print("Enter Model: ");
+            String model = scanner.nextLine();
+
+            System.out.print("Enter Generation: ");
+            String generation = scanner.nextLine();
+
+            Console console = new Console(id, title, price, stockQuantity, brand, model, generation);
+            productService.registerProduct(console);
+            System.out.println("Console registered successfully!");
+
+        } catch (NumberFormatException e) {
+            System.out.println("Error: Price and Stock Quantity must be valid numbers.");
+        }
     }
 
     private void listProducts() {
         System.out.println("\n--- Inventory Products ---");
-        System.out.println("Feature handled by ProductService.");
+        List<Product> products = productService.listProducts();
+        if (products.isEmpty()) {
+            System.out.println("No products registered yet.");
+            return;
+        }
+        for (Product p : products) {
+            System.out.println(p.getDescription() + " | Stock: " + p.getStockQuantity());
+        }
     }
 
     private void registerCustomer() {
         System.out.println("\n--- Register Customer ---");
-        System.out.println("Feature handled by PersonService.");
+        System.out.print("Enter Name: ");
+        String name = scanner.nextLine();
+
+        System.out.print("Enter Identification: ");
+        String identification = scanner.nextLine();
+
+        System.out.print("Enter Phone: ");
+        String phone = scanner.nextLine();
+
+        System.out.print("Enter Email: ");
+        String email = scanner.nextLine();
+
+        boolean success = personService.registerCustomer(name, identification, phone, email);
+        if (success) {
+            System.out.println("Customer registered successfully!");
+        } else {
+            System.out.println("Failed to register customer. Name and Identification are required.");
+        }
     }
 
     private void listCustomers() {
         System.out.println("\n--- Registered Customers ---");
-        System.out.println("Feature handled by PersonService.");
+        List<Customer> customers = personService.listCustomers();
+        if (customers.isEmpty()) {
+            System.out.println("No customers registered yet.");
+            return;
+        }
+        for (Customer c : customers) {
+            System.out.println(c.getRoleDescription() + " | ID: " + c.getIdentification()
+                    + " | Phone: " + c.getPhone());
+        }
     }
 
     private void listSellers() {
         System.out.println("\n--- Registered Sellers ---");
-        System.out.println("Feature handled by PersonService.");
+        List<Seller> sellers = personService.listSellers();
+        if (sellers.isEmpty()) {
+            System.out.println("No sellers registered.");
+            return;
+        }
+        for (Seller s : sellers) {
+            System.out.println(s.getRoleDescription() + " | ID: " + s.getIdentification()
+                    + " | Phone: " + s.getPhone());
+        }
     }
 
     private void registerSale() {
