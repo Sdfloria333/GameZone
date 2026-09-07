@@ -45,7 +45,7 @@ public class ProductService {
     /**
      * Updates the stock quantity of a product.
      *
-     * @param productId the unique identifier of the product
+     * @param productId   the unique identifier of the product
      * @param newQuantity the new stock quantity for the product
      */
     public void updateStock(String productId, int newQuantity) {
@@ -59,6 +59,31 @@ public class ProductService {
         if (product != null) {
             product.setStockQuantity(newQuantity);
             productRepository.saveAll(products);
+        }
+    }
+
+    /**
+     * Checks whether a product has enough stock available for a given quantity.
+     *
+     * @param productId the unique identifier of the product
+     * @param quantity  the quantity to check against the available stock
+     * @return true if the product exists and has enough stock, false otherwise
+     */
+    public boolean hasEnoughStock(String productId, int quantity) {
+        Product product = findProductById(productId);
+        return product != null && product.getStockQuantity() >= quantity;
+    }
+
+    /**
+     * Reduces the stock of a product by a given quantity.
+     *
+     * @param productId the unique identifier of the product
+     * @param quantity  the quantity to subtract from the current stock
+     */
+    public void reduceStock(String productId, int quantity) {
+        Product product = findProductById(productId);
+        if (product != null) {
+            updateStock(productId, product.getStockQuantity() - quantity);
         }
     }
 
@@ -78,5 +103,3 @@ public class ProductService {
         return null;
     }
 }
-
-
