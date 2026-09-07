@@ -58,8 +58,13 @@ public class ProductService {
      *
      * @param productId the unique identifier of the product
      * @param newQuantity the new stock quantity for the product
+     * @throws IllegalArgumentException if the productId is null/empty or if newQuantity is negative
      */
     public void updateStock(String productId, int newQuantity) {
+        if (productId == null || productId.isBlank()) {
+            throw new IllegalArgumentException("Product ID cannot be null or empty");
+        }
+
         if (newQuantity < 0) {
             throw new IllegalArgumentException("Stock quantity cannot be negative");
         }
