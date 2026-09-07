@@ -28,6 +28,10 @@ public class ProductService {
      * @param product the product to be registered
      */
     public void registerProduct(Product product) {
+        if (product.getPrice() < 0) {
+            throw new IllegalArgumentException("Price cannot be negative");
+        }
+
         List<Product> products = productRepository.findAll();
         products.add(product);
         productRepository.saveAll(products);
