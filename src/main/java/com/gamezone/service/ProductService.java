@@ -54,10 +54,17 @@ public class ProductService {
         }
 
         List<Product> products = productRepository.findAll();
-        Product product = findProductById(productId);
+        Product productToUpdate = null;
 
-        if (product != null) {
-            product.setStockQuantity(newQuantity);
+        for (Product product : products) {
+            if (product.getId().equals(productId)) {
+                productToUpdate = product;
+                break;
+            }
+        }
+
+        if (productToUpdate != null) {
+            productToUpdate.setStockQuantity(newQuantity);
             productRepository.saveAll(products);
         }
     }
