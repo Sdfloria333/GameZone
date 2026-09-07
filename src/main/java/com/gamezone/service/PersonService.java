@@ -17,6 +17,11 @@ public class PersonService {
     private List<Customer> customers;
     private List<Seller> sellers;
 
+    /**
+     * Creates a new PersonService, loading existing customers and sellers
+     * from persistence. If no sellers exist yet (first run), preloads
+     * three default sellers.
+     */
     public PersonService() {
         this.repository = new PersonRepository();
         this.customers = repository.loadCustomers();
@@ -41,7 +46,13 @@ public class PersonService {
 
     /**
      * Registers a new customer after validating required fields.
-     * Returns true if the customer was registered successfully.
+     *
+     * @param name the customer's full name
+     * @param identification the customer's identification document number
+     * @param phone the customer's contact phone number
+     * @param email the customer's email address
+     * @return true if the customer was registered successfully, false if
+     *         required fields (name or identification) were missing
      */
     public boolean registerCustomer(String name, String identification, String phone, String email) {
         if (name == null || name.isBlank() || identification == null || identification.isBlank()) {
@@ -55,6 +66,8 @@ public class PersonService {
 
     /**
      * Returns the list of all registered customers.
+     *
+     * @return the list of customers
      */
     public List<Customer> listCustomers() {
         return customers;
@@ -62,6 +75,8 @@ public class PersonService {
 
     /**
      * Returns the list of all registered sellers.
+     *
+     * @return the list of sellers
      */
     public List<Seller> listSellers() {
         return sellers;
