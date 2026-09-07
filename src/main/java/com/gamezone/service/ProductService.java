@@ -33,6 +33,13 @@ public class ProductService {
         }
 
         List<Product> products = productRepository.findAll();
+
+        for (Product existingProduct : products) {
+            if (existingProduct.getId().equals(product.getId())) {
+                throw new IllegalArgumentException("A product with this ID already exists");
+            }
+        }
+
         products.add(product);
         productRepository.saveAll(products);
     }
