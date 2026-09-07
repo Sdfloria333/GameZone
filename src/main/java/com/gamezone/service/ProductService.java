@@ -28,7 +28,18 @@ public class ProductService {
      * @param product the product to be registered
      */
     public void registerProduct(Product product) {
+        if (product.getPrice() < 0) {
+            throw new IllegalArgumentException("Price cannot be negative");
+        }
+
         List<Product> products = productRepository.findAll();
+
+        for (Product existingProduct : products) {
+            if (existingProduct.getId().equals(product.getId())) {
+                throw new IllegalArgumentException("A product with this ID already exists");
+            }
+        }
+
         products.add(product);
         productRepository.saveAll(products);
     }
@@ -47,17 +58,29 @@ public class ProductService {
      *
      * @param productId the unique identifier of the product
      * @param newQuantity the new stock quantity for the product
+     * @throws IllegalArgumentException if the productId is null/empty or if newQuantity is negative
      */
     public void updateStock(String productId, int newQuantity) {
+        if (productId == null || productId.isBlank()) {
+            throw new IllegalArgumentException("Product ID cannot be null or empty");
+        }
+
         if (newQuantity < 0) {
             throw new IllegalArgumentException("Stock quantity cannot be negative");
         }
 
         List<Product> products = productRepository.findAll();
-        Product product = findProductById(productId);
+        Product productToUpdate = null;
 
-        if (product != null) {
-            product.setStockQuantity(newQuantity);
+        for (Product product : products) {
+            if (product.getId().equals(productId)) {
+                productToUpdate = product;
+                break;
+            }
+        }
+
+        if (productToUpdate != null) {
+            productToUpdate.setStockQuantity(newQuantity);
             productRepository.saveAll(products);
         }
     }
@@ -69,6 +92,10 @@ public class ProductService {
      * @return the product if found, or null if no product matches the identifier
      */
     public Product findProductById(String id) {
+        if (id == null || id.isBlank()) {
+            throw new IllegalArgumentException("Product ID cannot be null or empty");
+        }
+
         List<Product> products = productRepository.findAll();
         for (Product product : products) {
             if (product.getId().equals(id)) {
