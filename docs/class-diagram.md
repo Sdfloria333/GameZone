@@ -1,6 +1,3 @@
-### File 3: `docs/class-diagram.md`
-
-```markdown
 # Class Diagram
 
 ```mermaid
@@ -59,13 +56,29 @@ classDiagram
         }
 
         class Sale {
-            -String id
-            -LocalDate date
+            -String saleId
+            -Date date
+            -String customerId
+            -String sellerId
+            -List~SaleDetail~ details
             -double total
             +calculateTotal() double
-            +getId() String
-            +getDate() LocalDate
+            +getSaleId() String
+            +getDate() Date
+            +getCustomerId() String
+            +getSellerId() String
+            +getDetails() List~SaleDetail~
             +getTotal() double
+        }
+
+        class SaleDetail {
+            -String productId
+            -int quantity
+            -double unitPrice
+            +getSubtotal() double
+            +getProductId() String
+            +getQuantity() int
+            +getUnitPrice() double
         }
     }
 
@@ -84,7 +97,7 @@ classDiagram
 
         class SaleRepository {
             -String filePath
-            +saveAll(List~Sale~ sales) void
+            +save(Sale sale) boolean
             +findAll() List~Sale~
         }
     }
@@ -100,13 +113,14 @@ classDiagram
         class ProductService {
             +registerProduct(Product product) void
             +listProducts() List~Product~
-            +updateStock(String productId, int quantity) void
+            +hasEnoughStock(String productId, int quantity) boolean
+            +reduceStock(String productId, int quantity) void
             +findProductById(String id) Product
         }
 
         class SaleService {
-            +registerSale(Sale sale) void
-            +listSales() List~Sale~
+            +registerSale(String saleId, String customerId, String sellerId, List~SaleDetail~ details) boolean
+            +getAllSales() List~Sale~
             +getSalesByCustomer(String customerId) List~Sale~
             +getSalesBySeller(String sellerId) List~Sale~
         }
@@ -115,7 +129,8 @@ classDiagram
     namespace ui {
         class ConsoleUI {
             +start() void
-            -showMainMenu() void
+            -printMenu() void
+            -executeOption(int option) void
         }
     }
 
@@ -124,9 +139,8 @@ classDiagram
     Product <|-- Videogame
     Product <|-- Console
 
-    Sale "1" --> "1" Customer : customer
-    Sale "1" --> "1" Seller : seller
-    Sale "*" --> "1..*" Product : products
+    Sale "1" *-- "1..*" SaleDetail : details
+    SaleDetail "*" --> "1" Product : productId
 
     PersonRepository ..> Person
     ProductRepository ..> Product
