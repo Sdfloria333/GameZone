@@ -32,9 +32,9 @@
 ## About Sales and Entity Relationships
 
 ### 5. What type of relationships exist between the Sale class and other system entities? Are these inheritance, association, composition, or another type?
-* **Relationship with Customer and Seller:** **Aggregation / Association**. A sale links one existing `Customer` and one existing `Seller`. If the sale is deleted, the customer and seller entities continue to exist independently in system records.
-* **Relationship with Products / Sale Items:** **Aggregation / Association**. A sale contains one or more `Product` objects (or `SaleItem` instances). The products exist in the store inventory independently of whether a sale record is created or removed.
-
+* **Relationship with Customer and Seller:** **Aggregation / Association**. A sale links one existing `Customer` and one existing `Seller`. If the sale record is deleted, the customer and seller entities continue to exist independently in the system database.
+* **Relationship with Sale Details (`SaleDetail`):** **Composition**. A `Sale` consists of one or more `SaleDetail` items (line items holding product ID, quantity, and unit price). These detail items depend entirely on the parent sale and cannot exist independently without it.
+* **Relationship with Products (`Product`):** **Aggregation / Association**. Each `SaleDetail` references a `Product` in the store inventory. If a sale or sale detail is removed, the referenced product remains in the store catalog.
 ### 6. Should the Sale class be responsible for calculating its own total, or should this recede into another class?
 * **Decision:** The `Sale` class **must be responsible** for calculating its own total.
 * **Justification:** Following the Information Expert Principle, `Sale` holds direct internal access to the list of purchased products and their respective unit prices/quantities. Encapsulating `calculateTotal()` inside `Sale` maintains strong cohesion.
