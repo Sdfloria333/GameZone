@@ -1,6 +1,3 @@
-### File 4: `docs/layers-diagram.md`
-
-```markdown
 # Layer Diagram
 
 ```mermaid
@@ -24,7 +21,7 @@ flowchart TD
     subgraph Model_Layer ["Capa de Modelo (com.gamezone.model)"]
         Person[Person / Customer / Seller]
         Product[Product / Videogame / Console]
-        Sale[Sale]
+        Sale[Sale / SaleDetail]
     end
 
     ConsoleUI --> PersonService

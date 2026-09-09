@@ -1,0 +1,44 @@
+[
+  {
+    "saleId": "1001",
+    "date": "2026-09-07 09:28:36",
+    "customerId": "10000",
+    "sellerId": "100",
+    "details": [
+      {
+        "productId": "1",
+        "quantity": 2,
+        "unitPrice": 100.0
+      }
+    ],
+    "total": 200.0
+  },
+  {
+    "saleId": "1",
+    "date": "2026-09-07 21:31:15",
+    "customerId": "1",
+    "sellerId": "1",
+    "details": [
+      {
+        "productId": "1",
+        "quantity": 1,
+        "unitPrice": 1.0
+      }
+    ],
+    "total": 1.0
+  },
+  {
+    "saleId": "1",
+    "date": "2026-09-07 21:32:41",
+    "customerId": "1",
+    "sellerId": "1",
+    "details": [
+      {
+        "productId": "1",
+        "quantity": 1,
+        "unitPrice": 111.0
+      }
+    ],
+    "total": 111.0
+  }
+]

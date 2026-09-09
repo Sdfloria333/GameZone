@@ -56,7 +56,7 @@ public class ProductService {
     /**
      * Updates the stock quantity of a product.
      *
-     * @param productId the unique identifier of the product
+     * @param productId   the unique identifier of the product
      * @param newQuantity the new stock quantity for the product
      * @throws IllegalArgumentException if the productId is null/empty or if newQuantity is negative
      */
@@ -86,6 +86,31 @@ public class ProductService {
     }
 
     /**
+     * Checks whether a product has enough stock available for a given quantity.
+     *
+     * @param productId the unique identifier of the product
+     * @param quantity  the quantity to check against the available stock
+     * @return true if the product exists and has enough stock, false otherwise
+     */
+    public boolean hasEnoughStock(String productId, int quantity) {
+        Product product = findProductById(productId);
+        return product != null && product.getStockQuantity() >= quantity;
+    }
+
+    /**
+     * Reduces the stock of a product by a given quantity.
+     *
+     * @param productId the unique identifier of the product
+     * @param quantity  the quantity to subtract from the current stock
+     */
+    public void reduceStock(String productId, int quantity) {
+        Product product = findProductById(productId);
+        if (product != null) {
+            updateStock(productId, product.getStockQuantity() - quantity);
+        }
+    }
+
+    /**
      * Finds a product by its unique identifier.
      *
      * @param id the unique identifier of the product
@@ -105,5 +130,3 @@ public class ProductService {
         return null;
     }
 }
-
-

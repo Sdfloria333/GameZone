@@ -31,6 +31,11 @@ public class ProductRepository {
      * @param products the list of products to be saved
      */
     public void saveAll(List<Product> products) {
+        File file = new File(filePath);
+        if (file.getParentFile() != null) {
+            file.getParentFile().mkdirs();
+        }
+
         try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
             for (Product product : products) {
                 writer.println(toCsvLine(product));
