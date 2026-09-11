@@ -7,6 +7,10 @@ import com.gamezone.service.ProductService;
 import com.gamezone.service.SaleService;
 import com.gamezone.ui.ConsoleUI;
 
+
+git checkout develop
+git pull origin develop
+git checkout -b feature/warranty-module
 /**
  * Main application entry point for GameZone Unicesar.
  */
