@@ -1,107 +1,91 @@
 package com.gamezone.persistence;
 
+import com.gamezone.model.Console;
 import com.gamezone.model.Product;
 import com.gamezone.model.Videogame;
-import com.gamezone.model.Console;
+import com.google.gson.*;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Manages the persistence of products using a CSV file.
- * This class is responsible for saving and loading product data.
+ * Handles JSON persistence for Product objects.
  */
+@SuppressWarnings("unused")
 public class ProductRepository {
+    private static final String FILE_PATH = "src/main/data/products.json";
+    private final Gson gson;
 
-    private String filePath;
+    public ProductRepository() {
+        // Adaptador simple: detecta automáticamente si es Videogame o Console
+        JsonDeserializer<Product> deserializer = (json, typeOfT, context) -> {
+            JsonObject jsonObject = json.getAsJsonObject();
 
-    /**
-     * Creates a new ProductRepository with the specified file path.
-     *
-     * @param filePath the path of the file used to store product data
-     */
-    public ProductRepository(String filePath) {
-        this.filePath = filePath;
+            // Si tiene 'platform' o 'genre', es un Videogame
+            if (jsonObject.has("platform") || jsonObject.has("genre")) {
+                return context.deserialize(jsonObject, Videogame.class);
+            }
+            // Si tiene 'brand' o 'model', es una Console
+            else if (jsonObject.has("brand") || jsonObject.has("model")) {
+                return context.deserialize(jsonObject, Console.class);
+            }
+
+            return null;
+        };
+
+        this.gson = new GsonBuilder()
+                .registerTypeAdapter(Product.class, deserializer)
+                .setPrettyPrinting()
+                .create();
     }
 
     /**
-     * Saves all products to the CSV file.
-     *
-     * @param products the list of products to be saved
+     * Saves a new product into the JSON file.
      */
-    public void saveAll(List<Product> products) {
-        File file = new File(filePath);
+    public boolean save(Product product) {
+        List<Product> products = findAll();
+        products.add(product);
+        return saveAll(products);
+    }
+
+    /**
+     * Reads all products from the JSON file.
+     */
+    public List<Product> findAll() {
+        File file = new File(FILE_PATH);
+        if (!file.exists()) {
+            return new ArrayList<>();
+        }
+
+        try (Reader reader = new FileReader(file)) {
+            Type listType = new TypeToken<ArrayList<Product>>() {}.getType();
+            List<Product> products = gson.fromJson(reader, listType);
+
+            if (products == null) return new ArrayList<>();
+            products.removeIf(java.util.Objects::isNull);
+            return products;
+        } catch (IOException e) {
+            return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Saves all products to the JSON file.
+     */
+    public boolean saveAll(List<Product> products) {
+        File file = new File(FILE_PATH);
         if (file.getParentFile() != null) {
             file.getParentFile().mkdirs();
         }
 
-        try (PrintWriter writer = new PrintWriter(new FileWriter(filePath))) {
-            for (Product product : products) {
-                writer.println(toCsvLine(product));
-            }
+        try (Writer writer = new FileWriter(file)) {
+            gson.toJson(products, writer);
+            return true;
         } catch (IOException e) {
-            System.out.println("Error saving products: " + e.getMessage());
+            return false;
         }
-    }
-
-    /**
-     * Loads all products from the CSV file.
-     *
-     * @return a list containing all products stored in the file
-     */
-    public List<Product> findAll() {
-        List<Product> products = new ArrayList<>();
-        File file = new File(filePath);
-
-        if (!file.exists()) {
-            return products;
-        }
-
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (!line.isBlank()) {
-                    products.add(fromCsvLine(line));
-                }
-            }
-        } catch (IOException e) {
-            System.out.println("Error loading products: " + e.getMessage());
-        }
-
-        return products;
-    }
-
-    private String toCsvLine(Product product) {
-        if (product instanceof Videogame) {
-            Videogame v = (Videogame) product;
-            return String.join(",", "VIDEOGAME", v.getId(), v.getTitle(),
-                    String.valueOf(v.getPrice()), String.valueOf(v.getStockQuantity()),
-                    v.getPlatform(), v.getGenre(), v.getAgeRating());
-        } else if (product instanceof Console) {
-            Console c = (Console) product;
-            return String.join(",", "CONSOLE", c.getId(), c.getTitle(),
-                    String.valueOf(c.getPrice()), String.valueOf(c.getStockQuantity()),
-                    c.getBrand(), c.getModel(), c.getGeneration());
-        }
-        return "";
-    }
-
-    private Product fromCsvLine(String line) {
-        String[] parts = line.split(",");
-        String type = parts[0];
-        String id = parts[1];
-        String title = parts[2];
-        double price = Double.parseDouble(parts[3]);
-        int stockQuantity = Integer.parseInt(parts[4]);
-
-        if (type.equals("VIDEOGAME")) {
-            return new Videogame(id, title, price, stockQuantity, parts[5], parts[6], parts[7]);
-        } else if (type.equals("CONSOLE")) {
-            return new Console(id, title, price, stockQuantity, parts[5], parts[6], parts[7]);
-        }
-        return null;
     }
 }
-
-

@@ -12,7 +12,7 @@ import com.gamezone.ui.ConsoleUI;
  */
 public class Main {
     public static void main(String[] args) {
-        ProductRepository productRepo = new ProductRepository("data/products.csv");
+        ProductRepository productRepo = new ProductRepository();
         SaleRepository saleRepo = new SaleRepository();
 
         ProductService productService = new ProductService(productRepo);
