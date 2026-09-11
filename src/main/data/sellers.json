@@ -1,0 +1,23 @@
+[
+  {
+    "employeeCode": "EMP001",
+    "shift": "Morning",
+    "name": "Ana Torres",
+    "identification": "1001",
+    "phone": "3001111111"
+  },
+  {
+    "employeeCode": "EMP002",
+    "shift": "Afternoon",
+    "name": "Carlos Ruiz",
+    "identification": "1002",
+    "phone": "3002222222"
+  },
+  {
+    "employeeCode": "EMP003",
+    "shift": "Evening",
+    "name": "Laura Gomez",
+    "identification": "1003",
+    "phone": "3003333333"
+  }
+]

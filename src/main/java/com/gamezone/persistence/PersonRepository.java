@@ -2,92 +2,86 @@ package com.gamezone.persistence;
 
 import com.gamezone.model.Customer;
 import com.gamezone.model.Seller;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.*;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handles saving and loading Customer and Seller data to and from text files.
- * This class is the only one allowed to perform file I/O for the person module.
+ * Handles JSON persistence for Customer and Seller objects.
  */
 public class PersonRepository {
 
-    private static final String CUSTOMERS_FILE = "data/customers.txt";
-    private static final String SELLERS_FILE = "data/sellers.txt";
+    private static final String CUSTOMERS_FILE = "src/main/data/customers.json";
+    private static final String SELLERS_FILE = "src/main/data/sellers.json";
+    private final Gson gson;
 
-    /**
-     * Saves the given list of customers to the customers file.
-     * Each line represents one customer, fields separated by commas.
-     */
-    public void saveCustomers(List<Customer> customers) {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(CUSTOMERS_FILE))) {
-            for (Customer c : customers) {
-                writer.println(c.getName() + "," + c.getIdentification() + ","
-                        + c.getPhone() + "," + c.getEmail());
-            }
-        } catch (IOException e) {
-            System.out.println("Error saving customers: " + e.getMessage());
-        }
+    public PersonRepository() {
+        this.gson = new GsonBuilder()
+                .setPrettyPrinting()
+                .create();
     }
 
     /**
-     * Loads the list of customers from the customers file.
-     * Returns an empty list if the file does not exist yet.
+     * Saves the list of customers to the JSON file.
+     */
+    public boolean saveCustomers(List<Customer> customers) {
+        return saveToFile(CUSTOMERS_FILE, customers);
+    }
+
+    /**
+     * Loads the list of customers from the JSON file.
      */
     public List<Customer> loadCustomers() {
-        List<Customer> customers = new ArrayList<>();
-        File file = new File(CUSTOMERS_FILE);
-        if (!file.exists()) {
-            return customers;
-        }
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                Customer customer = new Customer(parts[0], parts[1], parts[2], parts[3]);
-                customers.add(customer);
-            }
-        } catch (IOException e) {
-            System.out.println("Error loading customers: " + e.getMessage());
-        }
-        return customers;
+        Type listType = new TypeToken<ArrayList<Customer>>() {}.getType();
+        return loadFromFile(CUSTOMERS_FILE, listType);
     }
 
     /**
-     * Saves the given list of sellers to the sellers file.
+     * Saves the list of sellers to the JSON file.
      */
-    public void saveSellers(List<Seller> sellers) {
-        try (PrintWriter writer = new PrintWriter(new FileWriter(SELLERS_FILE))) {
-            for (Seller s : sellers) {
-                writer.println(s.getName() + "," + s.getIdentification() + ","
-                        + s.getPhone() + "," + s.getEmployeeCode() + "," + s.getShift());
-            }
-        } catch (IOException e) {
-            System.out.println("Error saving sellers: " + e.getMessage());
-        }
+    public boolean saveSellers(List<Seller> sellers) {
+        return saveToFile(SELLERS_FILE, sellers);
     }
 
     /**
-     * Loads the list of sellers from the sellers file.
-     * Returns an empty list if the file does not exist yet.
+     * Loads the list of sellers from the JSON file.
      */
     public List<Seller> loadSellers() {
-        List<Seller> sellers = new ArrayList<>();
-        File file = new File(SELLERS_FILE);
-        if (!file.exists()) {
-            return sellers;
+        Type listType = new TypeToken<ArrayList<Seller>>() {}.getType();
+        return loadFromFile(SELLERS_FILE, listType);
+    }
+
+    // Métodos auxiliares genéricos para no repetir código de I/O
+    private <T> boolean saveToFile(String filePath, List<T> data) {
+        File file = new File(filePath);
+        if (file.getParentFile() != null) {
+            file.getParentFile().mkdirs();
         }
-        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                String[] parts = line.split(",");
-                Seller seller = new Seller(parts[0], parts[1], parts[2], parts[3], parts[4]);
-                sellers.add(seller);
-            }
+        try (Writer writer = new FileWriter(file)) {
+            gson.toJson(data, writer);
+            return true;
         } catch (IOException e) {
-            System.out.println("Error loading sellers: " + e.getMessage());
+            System.err.println("Error saving file: " + e.getMessage());
+            return false;
         }
-        return sellers;
+    }
+
+    private <T> List<T> loadFromFile(String filePath, Type listType) {
+        File file = new File(filePath);
+        if (!file.exists()) {
+            return new ArrayList<>();
+        }
+        try (Reader reader = new FileReader(file)) {
+            List<T> data = gson.fromJson(reader, listType);
+            return data != null ? data : new ArrayList<>();
+        } catch (IOException e) {
+            System.err.println("Error reading file: " + e.getMessage());
+            return new ArrayList<>();
+        }
     }
 }

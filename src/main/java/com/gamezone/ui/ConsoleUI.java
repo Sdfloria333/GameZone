@@ -151,12 +151,15 @@ public class ConsoleUI {
     private void listProducts() {
         System.out.println("\n--- Inventory Products ---");
         List<Product> products = productService.listProducts();
-        if (products.isEmpty()) {
+        if (products == null || products.isEmpty()) {
             System.out.println("No products registered yet.");
             return;
         }
         for (Product p : products) {
-            System.out.println(p.getDescription() + " | Stock: " + p.getStockQuantity());
+            // Validación de seguridad para ignorar cualquier objeto nulo cargado por error en el JSON
+            if (p != null) {
+                System.out.println(p.getDescription() + " | Stock: " + p.getStockQuantity());
+            }
         }
     }
 

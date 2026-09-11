@@ -37,6 +37,3 @@ build/
 
 ### Mac OS ###
 .DS_Store
-# Excepción para forzar el rastreo de todo en la carpeta data
-!src/main/data/
-!src/main/data/**
