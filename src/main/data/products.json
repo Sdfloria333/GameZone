@@ -1,0 +1,20 @@
+[
+  {
+    "platform": "ss",
+    "genre": "ss",
+    "ageRating": "1",
+    "id": "1",
+    "title": "ss",
+    "price": 11.0,
+    "stockQuantity": 10
+  },
+  {
+    "brand": "ss",
+    "model": "11",
+    "generation": "ss",
+    "id": "1",
+    "title": "ss",
+    "price": 11.0,
+    "stockQuantity": 1
+  }
+]
