@@ -15,10 +15,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-/**
- * Console Interface handling all 10 operations defined in the system.
- */
 public class ConsoleUI {
+
     private final ProductService productService;
     private final PersonService personService;
     private final SaleService saleService;
@@ -39,30 +37,30 @@ public class ConsoleUI {
                 option = Integer.parseInt(scanner.nextLine());
                 executeOption(option);
             } catch (NumberFormatException e) {
-                System.out.println("Error: Please enter a valid numerical option.");
+                System.out.println("Error: Ingrese un numero valido.");
             }
         }
     }
 
     private void printMenu() {
         System.out.println("\n==========================================");
-        System.out.println("         GAMEZONE UNICESAR - SYSTEM       ");
+        System.out.println("          GAMEZONE UNICESAR - SYSTEM       ");
         System.out.println("==========================================");
-        System.out.println("--- Product Management ---");
-        System.out.println("1. Register Videogame");
-        System.out.println("2. Register Console");
-        System.out.println("3. List All Products");
-        System.out.println("--- Person Management ---");
-        System.out.println("4. Register Customer");
-        System.out.println("5. List All Customers");
-        System.out.println("6. List All Sellers");
-        System.out.println("--- Sales Management ---");
-        System.out.println("7. Register Sale");
-        System.out.println("8. List All Sales");
-        System.out.println("9. View Customer Purchase History");
-        System.out.println("10. View Seller Sales History");
-        System.out.println("0. Exit");
-        System.out.print("Select an option: ");
+        System.out.println("--- Gestion de Productos ---");
+        System.out.println("1. Registrar Videojuego");
+        System.out.println("2. Registrar Consola");
+        System.out.println("3. Listar Todos los Productos");
+        System.out.println("--- Gestion de Personas ---");
+        System.out.println("4. Registrar Cliente");
+        System.out.println("5. Listar Clientes");
+        System.out.println("6. Listar Vendedores");
+        System.out.println("--- Gestion de Ventas ---");
+        System.out.println("7. Registrar Venta");
+        System.out.println("8. Listar Todas las Ventas");
+        System.out.println("9. Ver Historial de Compras de Cliente");
+        System.out.println("10. Ver Historial de Ventas de Vendedor");
+        System.out.println("0. Salir");
+        System.out.print("Seleccione una opcion: ");
     }
 
     private void executeOption(int option) {
@@ -77,227 +75,233 @@ public class ConsoleUI {
             case 8 -> listAllSales();
             case 9 -> viewCustomerHistory();
             case 10 -> viewSellerHistory();
-            case 0 -> System.out.println("Closing GameZone Unicesar application. Goodbye!");
-            default -> System.out.println("Invalid option. Please try again.");
+            case 0 -> System.out.println("Saliendo del sistema GameZone. ¡Hasta luego!");
+            default -> System.out.println("Opcion no valida. Intente de nuevo.");
         }
     }
 
     private void registerVideogame() {
-        System.out.println("\n--- Register Videogame ---");
+        System.out.println("\n--- Registrar Videojuego ---");
         try {
-            System.out.print("Enter ID: ");
+            System.out.print("ID: ");
             String id = scanner.nextLine();
 
-            System.out.print("Enter Title: ");
+            System.out.print("Titulo: ");
             String title = scanner.nextLine();
 
-            System.out.print("Enter Price: ");
+            System.out.print("Precio: ");
             double price = Double.parseDouble(scanner.nextLine());
 
-            System.out.print("Enter Stock Quantity: ");
-            int stockQuantity = Integer.parseInt(scanner.nextLine());
+            System.out.print("Stock: ");
+            int stock = Integer.parseInt(scanner.nextLine());
 
-            System.out.print("Enter Platform: ");
+            System.out.print("Plataforma: ");
             String platform = scanner.nextLine();
 
-            System.out.print("Enter Genre: ");
+            System.out.print("Genero: ");
             String genre = scanner.nextLine();
 
-            System.out.print("Enter Age Rating: ");
+            System.out.print("Clasificacion de edad: ");
             String ageRating = scanner.nextLine();
 
-            Videogame videogame = new Videogame(id, title, price, stockQuantity, platform, genre, ageRating);
-            productService.registerProduct(videogame);
-            System.out.println("Videogame registered successfully!");
-
+            Videogame game = new Videogame(id, title, price, stock, platform, genre, ageRating);
+            if (productService.registerVideogame(game)) {
+                System.out.println("Videojuego registrado con exito.");
+            } else {
+                System.out.println("Error al registrar el videojuego (ID duplicado o datos invalidos).");
+            }
         } catch (NumberFormatException e) {
-            System.out.println("Error: Price and Stock Quantity must be valid numbers.");
+            System.out.println("Error: Precio y Stock deben ser valores numericos.");
         }
     }
 
     private void registerConsole() {
-        System.out.println("\n--- Register Console ---");
+        System.out.println("\n--- Registrar Consola ---");
         try {
-            System.out.print("Enter ID: ");
+            System.out.print("ID: ");
             String id = scanner.nextLine();
 
-            System.out.print("Enter Title: ");
+            System.out.print("Titulo / Nombre: ");
             String title = scanner.nextLine();
 
-            System.out.print("Enter Price: ");
+            System.out.print("Precio: ");
             double price = Double.parseDouble(scanner.nextLine());
 
-            System.out.print("Enter Stock Quantity: ");
-            int stockQuantity = Integer.parseInt(scanner.nextLine());
+            System.out.print("Stock: ");
+            int stock = Integer.parseInt(scanner.nextLine());
 
-            System.out.print("Enter Brand: ");
+            System.out.print("Marca: ");
             String brand = scanner.nextLine();
 
-            System.out.print("Enter Model: ");
+            System.out.print("Modelo: ");
             String model = scanner.nextLine();
 
-            System.out.print("Enter Generation: ");
+            System.out.print("Generacion: ");
             String generation = scanner.nextLine();
 
-            Console console = new Console(id, title, price, stockQuantity, brand, model, generation);
-            productService.registerProduct(console);
-            System.out.println("Console registered successfully!");
-
+            Console console = new Console(id, title, price, stock, brand, model, generation);
+            if (productService.registerConsole(console)) {
+                System.out.println("Consola registrada con exito.");
+            } else {
+                System.out.println("Error al registrar la consola (ID duplicado o datos invalidos).");
+            }
         } catch (NumberFormatException e) {
-            System.out.println("Error: Price and Stock Quantity must be valid numbers.");
+            System.out.println("Error: Precio y Stock deben ser valores numericos.");
         }
     }
 
     private void listProducts() {
-        System.out.println("\n--- Inventory Products ---");
-        List<Product> products = productService.listProducts();
-        if (products == null || products.isEmpty()) {
-            System.out.println("No products registered yet.");
+        System.out.println("\n--- Inventario de Productos ---");
+        List<Product> products = productService.listAllProducts();
+        if (products.isEmpty()) {
+            System.out.println("No hay productos registrados.");
             return;
         }
         for (Product p : products) {
-            // Validación de seguridad para ignorar cualquier objeto nulo cargado por error en el JSON
             if (p != null) {
-                System.out.println(p.getDescription() + " | Stock: " + p.getStockQuantity());
+                System.out.println("[" + p.getId() + "] " + p.getTitle() + " | Precio: $" + p.getPrice() + " | Stock: "
+                        + p.getStockQuantity());
             }
         }
     }
 
     private void registerCustomer() {
-        System.out.println("\n--- Register Customer ---");
-        System.out.print("Enter Name: ");
+        System.out.println("\n--- Registrar Cliente ---");
+        System.out.print("Nombre: ");
         String name = scanner.nextLine();
 
-        System.out.print("Enter Identification: ");
+        System.out.print("Identificacion / Cédula: ");
         String identification = scanner.nextLine();
 
-        System.out.print("Enter Phone: ");
+        System.out.print("Telefono: ");
         String phone = scanner.nextLine();
 
-        System.out.print("Enter Email: ");
+        System.out.print("Email: ");
         String email = scanner.nextLine();
 
-        boolean success = personService.registerCustomer(name, identification, phone, email);
-        if (success) {
-            System.out.println("Customer registered successfully!");
+        if (personService.registerCustomer(name, identification, phone, email)) {
+            System.out.println("Cliente registrado con exito.");
         } else {
-            System.out.println("Failed to register customer. Name and Identification are required.");
+            System.out.println("Error al registrar cliente (Campos obligatorios vacios o ID existente).");
         }
     }
 
     private void listCustomers() {
-        System.out.println("\n--- Registered Customers ---");
+        System.out.println("\n--- Clientes Registrados ---");
         List<Customer> customers = personService.listCustomers();
         if (customers.isEmpty()) {
-            System.out.println("No customers registered yet.");
+            System.out.println("No hay clientes registrados.");
             return;
         }
         for (Customer c : customers) {
-            System.out.println(c.getRoleDescription() + " | ID: " + c.getIdentification()
-                    + " | Phone: " + c.getPhone());
+            System.out.println("ID: " + c.getIdentification() + " | Nombre: " + c.getName() + " | Tel: " + c.getPhone()
+                    + " | Email: " + c.getEmail());
         }
     }
 
     private void listSellers() {
-        System.out.println("\n--- Registered Sellers ---");
+        System.out.println("\n--- Vendedores Registrados ---");
         List<Seller> sellers = personService.listSellers();
         if (sellers.isEmpty()) {
-            System.out.println("No sellers registered.");
+            System.out.println("No hay vendedores registrados.");
             return;
         }
         for (Seller s : sellers) {
-            System.out.println(s.getRoleDescription() + " | ID: " + s.getIdentification()
-                    + " | Phone: " + s.getPhone());
+            System.out.println(
+                    "ID: " + s.getIdentification() + " | Nombre: " + s.getName() + " | Turno: " + s.getShift());
         }
     }
 
     private void registerSale() {
-        System.out.println("\n--- Register New Sale ---");
+        System.out.println("\n--- Registrar Venta ---");
         try {
-            System.out.print("Enter Sale ID: ");
+            System.out.print("ID Venta: ");
             String saleId = scanner.nextLine();
 
-            System.out.print("Enter Customer ID: ");
+            System.out.print("Identificacion Cliente: ");
             String customerId = scanner.nextLine();
 
-            System.out.print("Enter Seller ID: ");
+            System.out.print("Identificacion Vendedor: ");
             String sellerId = scanner.nextLine();
 
             List<SaleDetail> details = new ArrayList<>();
             boolean addMore = true;
 
             while (addMore) {
-                System.out.print("Enter Product ID: ");
+                System.out.print("ID Producto: ");
                 String productId = scanner.nextLine();
 
-                System.out.print("Enter Quantity: ");
+                System.out.print("Cantidad: ");
                 int quantity = Integer.parseInt(scanner.nextLine());
 
-                System.out.print("Enter Unit Price: ");
-                double unitPrice = Double.parseDouble(scanner.nextLine());
+                Product product = productService.findProductById(productId);
+                if (product == null) {
+                    System.out.println("El producto no existe. Intente de nuevo.");
+                    continue;
+                }
 
-                details.add(new SaleDetail(productId, quantity, unitPrice));
+                details.add(new SaleDetail(productId, quantity, product.getPrice()));
 
-                System.out.print("Add another product to this sale? (y/n): ");
+                System.out.print("¿Agregar otro producto? (s/n): ");
                 String resp = scanner.nextLine();
-                if (!resp.equalsIgnoreCase("y")) {
+                if (!resp.equalsIgnoreCase("s")) {
                     addMore = false;
                 }
             }
 
-            boolean success = saleService.registerSale(saleId, customerId, sellerId, details);
-            if (success) {
-                System.out.println("Sale registered successfully and saved to JSON!");
+            if (saleService.registerSale(saleId, customerId, sellerId, details)) {
+                System.out.println("Venta registrada y guardada con exito.");
             } else {
-                System.out.println("Failed to save sale.");
+                System.out.println("Error al procesar la venta. Verifique cliente, vendedor o stock disponible.");
             }
 
         } catch (Exception e) {
-            System.out.println("Error processing sale: " + e.getMessage());
+            System.out.println("Error en los datos ingresados: " + e.getMessage());
         }
     }
 
     private void listAllSales() {
-        System.out.println("\n--- Sales History ---");
-        List<Sale> sales = saleService.getAllSales();
+        System.out.println("\n--- Historial General de Ventas ---");
+        List<Sale> sales = saleService.listSales();
         if (sales.isEmpty()) {
-            System.out.println("No sales registered yet.");
+            System.out.println("No hay ventas registradas.");
             return;
         }
         for (Sale s : sales) {
-            System.out.println("ID: " + s.getSaleId() + " | Date: " + s.getDate() +
-                    " | Customer: " + s.getCustomerId() + " | Seller: " + s.getSellerId() +
-                    " | Total: $" + s.getTotal());
+            System.out.println("Venta ID: " + s.getSaleId() + " | Fecha: " + s.getDate() + " | Cliente ID: "
+                    + s.getCustomerId() + " | Vendedor ID: " + s.getSellerId() + " | Total: $" + s.getTotal());
         }
     }
 
     private void viewCustomerHistory() {
-        System.out.println("\n--- Customer Purchase History ---");
-        System.out.print("Enter Customer ID: ");
+        System.out.println("\n--- Historial por Cliente ---");
+        System.out.print("Identificacion del Cliente: ");
         String customerId = scanner.nextLine();
 
-        List<Sale> sales = saleService.getSalesByCustomer(customerId);
+        List<Sale> sales = saleService.listSalesByCustomer(customerId);
         if (sales.isEmpty()) {
-            System.out.println("No sales found for Customer ID: " + customerId);
+            System.out.println("No se encontraron ventas para el cliente especificado.");
             return;
         }
         for (Sale s : sales) {
-            System.out.println("Sale ID: " + s.getSaleId() + " | Date: " + s.getDate() + " | Total: $" + s.getTotal());
+            System.out
+                    .println("Venta ID: " + s.getSaleId() + " | Fecha: " + s.getDate() + " | Total: $" + s.getTotal());
         }
     }
 
     private void viewSellerHistory() {
-        System.out.println("\n--- Seller Sales History ---");
-        System.out.print("Enter Seller ID: ");
+        System.out.println("\n--- Historial por Vendedor ---");
+        System.out.print("Identificacion del Vendedor: ");
         String sellerId = scanner.nextLine();
 
-        List<Sale> sales = saleService.getSalesBySeller(sellerId);
+        List<Sale> sales = saleService.listSalesBySeller(sellerId);
         if (sales.isEmpty()) {
-            System.out.println("No sales found handled by Seller ID: " + sellerId);
+            System.out.println("No se encontraron ventas asociadas a este vendedor.");
             return;
         }
         for (Sale s : sales) {
-            System.out.println("Sale ID: " + s.getSaleId() + " | Date: " + s.getDate() + " | Total: $" + s.getTotal());
+            System.out
+                    .println("Venta ID: " + s.getSaleId() + " | Fecha: " + s.getDate() + " | Total: $" + s.getTotal());
         }
     }
 }
