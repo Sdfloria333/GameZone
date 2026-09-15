@@ -5,68 +5,55 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Handles JSON persistence for Sale objects.
- */
 public class SaleRepository {
-    private final String filePath = "src/main/data/sales.json";
-    private final Gson gson;
 
-    public SaleRepository() {
-        this.gson = new GsonBuilder()
-                .setDateFormat("yyyy-MM-dd HH:mm:ss")
-                .setPrettyPrinting()
-                .create();
+    private static final String SALES_FILE = "src/main/data/sales.json";
+    private final Gson gson = new GsonBuilder()
+            .setDateFormat("yyyy-MM-dd HH:mm:ss")
+            .setPrettyPrinting()
+            .create();
+
+    public boolean saveSales(List<Sale> sales) {
+        return saveToFile(SALES_FILE, sales);
     }
 
-    /**
-     * Saves a new sale into the JSON file.
-     * @param sale The sale object to persist.
-     * @return True if saved successfully, false otherwise.
-     */
-    public boolean save(Sale sale) {
-        List<Sale> sales = findAll();
-        sales.add(sale);
-        return saveAll(sales);
+    public List<Sale> loadSales() {
+        Type listType = new TypeToken<ArrayList<Sale>>() {
+        }.getType();
+        return loadFromFile(SALES_FILE, listType);
     }
 
-    /**
-     * Reads all sales from the JSON file.
-     * @return A list of sales.
-     */
-    public List<Sale> findAll() {
-        File file = new File(filePath);
-        if (!file.exists()) {
-            return new ArrayList<>();
-        }
-
-        try (Reader reader = new FileReader(file)) {
-            Type listType = new TypeToken<ArrayList<Sale>>() {}.getType();
-            List<Sale> sales = gson.fromJson(reader, listType);
-            return sales != null ? sales : new ArrayList<>();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return new ArrayList<>();
-        }
-    }
-
-    private boolean saveAll(List<Sale> sales) {
-        File file = new File(filePath);
-        if (file.getParentFile() != null) {
+    private <T> boolean saveToFile(String path, List<T> data) {
+        File file = new File(path);
+        if (file.getParentFile() != null)
             file.getParentFile().mkdirs();
-        }
 
-        try (Writer writer = new FileWriter(file)) {
-            gson.toJson(sales, writer);
+        try (FileWriter writer = new FileWriter(file)) {
+            gson.toJson(data, writer);
             return true;
         } catch (IOException e) {
-            e.printStackTrace();
             return false;
+        }
+    }
+
+    private <T> List<T> loadFromFile(String path, Type listType) {
+        File file = new File(path);
+        if (!file.exists())
+            return new ArrayList<>();
+
+        try (FileReader reader = new FileReader(file)) {
+            List<T> data = gson.fromJson(reader, listType);
+            return data != null ? data : new ArrayList<>();
+        } catch (IOException e) {
+            return new ArrayList<>();
         }
     }
 }
