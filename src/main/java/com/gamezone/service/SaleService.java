@@ -8,39 +8,36 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Service handling business rules for sales operations.
- */
 public class SaleService {
-    private final SaleRepository saleRepository;
+
+    private final SaleRepository repository;
     private final ProductService productService;
     private final PersonService personService;
+    private final List<Sale> sales;
 
-    public SaleService(SaleRepository saleRepository, ProductService productService, PersonService personService) {
-        this.saleRepository = saleRepository;
+    public SaleService(ProductService productService, PersonService personService) {
+        this.repository = new SaleRepository();
         this.productService = productService;
         this.personService = personService;
+        this.sales = repository.loadSales();
     }
 
-    /**
-     * Registers a new sale after validating business rules.
-     *
-     * @param saleId     Identifier for the sale.
-     * @param customerId Identifier of the customer.
-     * @param sellerId   Identifier of the seller.
-     * @param details    List of product details.
-     * @return True if sale was registered successfully.
-     * @throws Exception If business constraints are violated.
-     */
-    public boolean registerSale(String saleId, String customerId, String sellerId, List<SaleDetail> details)
-            throws Exception {
-        if (details == null || details.isEmpty()) {
-            throw new IllegalArgumentException("A sale must contain at least one product.");
+    public boolean registerSale(String saleId, String customerId, String sellerId, List<SaleDetail> details) {
+        if (saleId == null || saleId.isBlank() || details == null || details.isEmpty()) {
+            return false;
+        }
+
+        if (personService.findCustomerByIdentification(customerId) == null) {
+            return false;
+        }
+
+        if (personService.findSellerByIdentification(sellerId) == null) {
+            return false;
         }
 
         for (SaleDetail detail : details) {
             if (!productService.hasEnoughStock(detail.getProductId(), detail.getQuantity())) {
-                throw new IllegalStateException("Insufficient stock for product ID: " + detail.getProductId());
+                return false;
             }
         }
 
@@ -49,47 +46,31 @@ public class SaleService {
         }
 
         Sale newSale = new Sale(saleId, new Date(), customerId, sellerId, details);
-        return saleRepository.save(newSale);
+        sales.add(newSale);
+        return repository.saveSales(sales);
     }
 
-    /**
-     * Retrieves all recorded sales.
-     *
-     * @return List of sales.
-     */
-    public List<Sale> getAllSales() {
-        return saleRepository.findAll();
+    public List<Sale> listSales() {
+        return sales;
     }
 
-    /**
-     * Retrieves sales history for a specific customer.
-     *
-     * @param customerId Customer identifier.
-     * @return List of sales associated with the customer.
-     */
-    public List<Sale> getSalesByCustomer(String customerId) {
-        List<Sale> filteredSales = new ArrayList<>();
-        for (Sale sale : getAllSales()) {
+    public List<Sale> listSalesByCustomer(String customerId) {
+        List<Sale> filtered = new ArrayList<>();
+        for (Sale sale : sales) {
             if (sale.getCustomerId().equalsIgnoreCase(customerId)) {
-                filteredSales.add(sale);
+                filtered.add(sale);
             }
         }
-        return filteredSales;
+        return filtered;
     }
 
-    /**
-     * Retrieves sales history handled by a specific seller.
-     *
-     * @param sellerId Seller identifier.
-     * @return List of sales handled by the seller.
-     */
-    public List<Sale> getSalesBySeller(String sellerId) {
-        List<Sale> filteredSales = new ArrayList<>();
-        for (Sale sale : getAllSales()) {
+    public List<Sale> listSalesBySeller(String sellerId) {
+        List<Sale> filtered = new ArrayList<>();
+        for (Sale sale : sales) {
             if (sale.getSellerId().equalsIgnoreCase(sellerId)) {
-                filteredSales.add(sale);
+                filtered.add(sale);
             }
         }
-        return filteredSales;
+        return filtered;
     }
 }
