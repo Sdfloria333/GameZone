@@ -1,4 +1,4 @@
-package com.gamezone.model;
+package com.gamezone.model.persons;
 
 /**
  * Represents a customer who purchases products at the store.

@@ -1,4 +1,4 @@
-package com.gamezone.model;
+package com.gamezone.model.persons;
 
 /**
  * Represents a seller (employee) who attends customers and registers sales.

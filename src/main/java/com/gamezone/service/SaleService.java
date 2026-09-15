@@ -1,7 +1,7 @@
 package com.gamezone.service;
 
-import com.gamezone.model.Sale;
-import com.gamezone.model.SaleDetail;
+import com.gamezone.model.sales.Sale;
+import com.gamezone.model.sales.SaleDetail;
 import com.gamezone.persistence.SaleRepository;
 
 import java.util.ArrayList;
@@ -32,7 +32,8 @@ public class SaleService {
      * @return True if sale was registered successfully.
      * @throws Exception If business constraints are violated.
      */
-    public boolean registerSale(String saleId, String customerId, String sellerId, List<SaleDetail> details) throws Exception {
+    public boolean registerSale(String saleId, String customerId, String sellerId, List<SaleDetail> details)
+            throws Exception {
         if (details == null || details.isEmpty()) {
             throw new IllegalArgumentException("A sale must contain at least one product.");
         }

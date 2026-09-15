@@ -1,7 +1,7 @@
 package com.gamezone.service;
 
-import com.gamezone.model.Customer;
-import com.gamezone.model.Seller;
+import com.gamezone.model.persons.Customer;
+import com.gamezone.model.persons.Seller;
 import com.gamezone.persistence.PersonRepository;
 
 import java.util.List;

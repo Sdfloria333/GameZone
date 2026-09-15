@@ -1,6 +1,6 @@
 package com.gamezone.service;
 
-import com.gamezone.model.Product;
+import com.gamezone.model.products.Product;
 import com.gamezone.persistence.ProductRepository;
 
 import java.util.List;

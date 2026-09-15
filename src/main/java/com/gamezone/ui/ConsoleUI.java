@@ -1,12 +1,12 @@
 package com.gamezone.ui;
 
-import com.gamezone.model.Console;
-import com.gamezone.model.Customer;
-import com.gamezone.model.Product;
-import com.gamezone.model.Sale;
-import com.gamezone.model.SaleDetail;
-import com.gamezone.model.Seller;
-import com.gamezone.model.Videogame;
+import com.gamezone.model.persons.Customer;
+import com.gamezone.model.persons.Seller;
+import com.gamezone.model.products.Console;
+import com.gamezone.model.products.Product;
+import com.gamezone.model.products.Videogame;
+import com.gamezone.model.sales.Sale;
+import com.gamezone.model.sales.SaleDetail;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.SaleService;

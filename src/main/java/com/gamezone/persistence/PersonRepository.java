@@ -1,7 +1,7 @@
 package com.gamezone.persistence;
 
-import com.gamezone.model.Customer;
-import com.gamezone.model.Seller;
+import com.gamezone.model.persons.Customer;
+import com.gamezone.model.persons.Seller;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;

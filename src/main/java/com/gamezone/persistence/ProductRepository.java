@@ -1,8 +1,8 @@
 package com.gamezone.persistence;
 
-import com.gamezone.model.Console;
-import com.gamezone.model.Product;
-import com.gamezone.model.Videogame;
+import com.gamezone.model.products.Console;
+import com.gamezone.model.products.Product;
+import com.gamezone.model.products.Videogame;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 
