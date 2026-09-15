@@ -1,5 +1,5 @@
 
-package com.gamezone.model;
+package com.gamezone.model.products;
 
 /**
  * Represents a generic product sold in the store.

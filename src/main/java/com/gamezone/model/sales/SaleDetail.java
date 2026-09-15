@@ -1,4 +1,4 @@
-package com.gamezone.model;
+package com.gamezone.model.sales;
 
 /**
  * Represents an item detail in a sale transaction.

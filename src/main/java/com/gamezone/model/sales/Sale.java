@@ -1,4 +1,4 @@
-package com.gamezone.model;
+package com.gamezone.model.sales;
 
 import java.util.Date;
 import java.util.List;

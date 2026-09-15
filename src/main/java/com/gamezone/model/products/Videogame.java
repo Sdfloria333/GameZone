@@ -1,5 +1,5 @@
 
-package com.gamezone.model;
+package com.gamezone.model.products;
 
 /**
  * Represents a videogame product available in the GameZone store.

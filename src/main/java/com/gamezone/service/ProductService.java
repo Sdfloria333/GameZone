@@ -1,132 +1,96 @@
 package com.gamezone.service;
 
-import com.gamezone.model.Product;
+import com.gamezone.model.products.Console;
+import com.gamezone.model.products.Product;
+import com.gamezone.model.products.Videogame;
 import com.gamezone.persistence.ProductRepository;
 
+import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Provides business logic for managing products.
- * This class handles product registration, listing, stock updates, and searches.
- */
 public class ProductService {
 
-    private ProductRepository productRepository;
+    private final ProductRepository repository;
+    private final List<Console> consoles;
+    private final List<Videogame> videogames;
 
-    /**
-     * Creates a new ProductService with the specified product repository.
-     *
-     * @param productRepository the repository used to manage product data
-     */
-    public ProductService(ProductRepository productRepository) {
-        this.productRepository = productRepository;
+    public ProductService() {
+        this.repository = new ProductRepository();
+        this.consoles = repository.loadConsoles();
+        this.videogames = repository.loadVideogames();
     }
 
-    /**
-     * Registers a new product and saves it in the repository.
-     *
-     * @param product the product to be registered
-     */
-    public void registerProduct(Product product) {
-        if (product.getPrice() < 0) {
-            throw new IllegalArgumentException("Price cannot be negative");
+    public boolean registerConsole(Console console) {
+        if (console == null || console.getId() == null || console.getId().isBlank() || console.getPrice() < 0) {
+            return false;
         }
-
-        List<Product> products = productRepository.findAll();
-
-        for (Product existingProduct : products) {
-            if (existingProduct.getId().equals(product.getId())) {
-                throw new IllegalArgumentException("A product with this ID already exists");
-            }
+        if (findProductById(console.getId()) != null) {
+            return false;
         }
-
-        products.add(product);
-        productRepository.saveAll(products);
+        consoles.add(console);
+        return repository.saveConsoles(consoles);
     }
 
-    /**
-     * Retrieves all registered products.
-     *
-     * @return a list containing all registered products
-     */
-    public List<Product> listProducts() {
-        return productRepository.findAll();
+    public boolean registerVideogame(Videogame videogame) {
+        if (videogame == null || videogame.getId() == null || videogame.getId().isBlank() || videogame.getPrice() < 0) {
+            return false;
+        }
+        if (findProductById(videogame.getId()) != null) {
+            return false;
+        }
+        videogames.add(videogame);
+        return repository.saveVideogames(videogames);
     }
 
-    /**
-     * Updates the stock quantity of a product.
-     *
-     * @param productId   the unique identifier of the product
-     * @param newQuantity the new stock quantity for the product
-     * @throws IllegalArgumentException if the productId is null/empty or if newQuantity is negative
-     */
-    public void updateStock(String productId, int newQuantity) {
-        if (productId == null || productId.isBlank()) {
-            throw new IllegalArgumentException("Product ID cannot be null or empty");
-        }
-
-        if (newQuantity < 0) {
-            throw new IllegalArgumentException("Stock quantity cannot be negative");
-        }
-
-        List<Product> products = productRepository.findAll();
-        Product productToUpdate = null;
-
-        for (Product product : products) {
-            if (product.getId().equals(productId)) {
-                productToUpdate = product;
-                break;
-            }
-        }
-
-        if (productToUpdate != null) {
-            productToUpdate.setStockQuantity(newQuantity);
-            productRepository.saveAll(products);
-        }
+    public List<Product> listAllProducts() {
+        List<Product> allProducts = new ArrayList<>();
+        allProducts.addAll(consoles);
+        allProducts.addAll(videogames);
+        return allProducts;
     }
 
-    /**
-     * Checks whether a product has enough stock available for a given quantity.
-     *
-     * @param productId the unique identifier of the product
-     * @param quantity  the quantity to check against the available stock
-     * @return true if the product exists and has enough stock, false otherwise
-     */
+    public List<Console> listConsoles() {
+        return consoles;
+    }
+
+    public List<Videogame> listVideogames() {
+        return videogames;
+    }
+
+    public Product findProductById(String id) {
+        if (id == null || id.isBlank())
+            return null;
+
+        for (Console c : consoles) {
+            if (c.getId().equalsIgnoreCase(id))
+                return c;
+        }
+        for (Videogame v : videogames) {
+            if (v.getId().equalsIgnoreCase(id))
+                return v;
+        }
+        return null;
+    }
+
     public boolean hasEnoughStock(String productId, int quantity) {
         Product product = findProductById(productId);
         return product != null && product.getStockQuantity() >= quantity;
     }
 
-    /**
-     * Reduces the stock of a product by a given quantity.
-     *
-     * @param productId the unique identifier of the product
-     * @param quantity  the quantity to subtract from the current stock
-     */
-    public void reduceStock(String productId, int quantity) {
+    public boolean reduceStock(String productId, int quantity) {
         Product product = findProductById(productId);
-        if (product != null) {
-            updateStock(productId, product.getStockQuantity() - quantity);
-        }
-    }
-
-    /**
-     * Finds a product by its unique identifier.
-     *
-     * @param id the unique identifier of the product
-     * @return the product if found, or null if no product matches the identifier
-     */
-    public Product findProductById(String id) {
-        if (id == null || id.isBlank()) {
-            throw new IllegalArgumentException("Product ID cannot be null or empty");
+        if (product == null || product.getStockQuantity() < quantity) {
+            return false;
         }
 
-        List<Product> products = productRepository.findAll();
-        for (Product product : products) {
-            if (product.getId().equals(id)) {
-                return product;
-            }
+        product.setStockQuantity(product.getStockQuantity() - quantity);
+
+        if (product instanceof Console) {
+            return repository.saveConsoles(consoles);
+        } else if (product instanceof Videogame) {
+            return repository.saveVideogames(videogames);
         }
-        return null;
+
+        return false;
     }
 }
