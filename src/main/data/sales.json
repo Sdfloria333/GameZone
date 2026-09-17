@@ -1,44 +1,73 @@
 [
   {
-    "saleId": "1001",
-    "date": "2026-09-07 09:28:36",
-    "customerId": "10000",
-    "sellerId": "100",
+    "saleId": "1",
+    "date": "2026-09-17 16:07:40",
+    "customerId": "1067",
+    "sellerId": "1001",
     "details": [
       {
-        "productId": "1",
-        "quantity": 2,
-        "unitPrice": 100.0
+        "productId": "ACC01",
+        "quantity": 1,
+        "unitPrice": 69.99
       }
     ],
-    "total": 200.0
+    "total": 69.99
   },
   {
-    "saleId": "1",
-    "date": "2026-09-07 21:31:15",
-    "customerId": "1",
-    "sellerId": "1",
+    "saleId": "2",
+    "date": "2026-09-17 16:10:13",
+    "customerId": "1067",
+    "sellerId": "1001",
     "details": [
       {
-        "productId": "1",
+        "productId": "2",
         "quantity": 1,
-        "unitPrice": 1.0
+        "unitPrice": 1000.0
+      },
+      {
+        "productId": "ACC01",
+        "quantity": 1,
+        "unitPrice": 69.99
       }
     ],
-    "total": 1.0
+    "total": 1069.99
   },
   {
-    "saleId": "1",
-    "date": "2026-09-07 21:32:41",
-    "customerId": "1",
-    "sellerId": "1",
+    "saleId": "4",
+    "date": "2026-09-17 16:11:18",
+    "customerId": "1067",
+    "sellerId": "1001",
     "details": [
       {
-        "productId": "1",
+        "productId": "2",
         "quantity": 1,
-        "unitPrice": 111.0
+        "unitPrice": 1000.0
+      },
+      {
+        "productId": "3",
+        "quantity": 1,
+        "unitPrice": 1000.0
       }
     ],
-    "total": 111.0
+    "total": 2000.0
+  },
+  {
+    "saleId": "5",
+    "date": "2026-09-17 16:16:40",
+    "customerId": "1067",
+    "sellerId": "1001",
+    "details": [
+      {
+        "productId": "2",
+        "quantity": 1,
+        "unitPrice": 1000.0
+      },
+      {
+        "productId": "4",
+        "quantity": 1,
+        "unitPrice": 1000.0
+      }
+    ],
+    "total": 2000.0
   }
 ]

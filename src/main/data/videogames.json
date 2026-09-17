@@ -1,0 +1,11 @@
+[
+  {
+    "platform": "playstation",
+    "genre": "accion",
+    "ageRating": "18",
+    "id": "1",
+    "title": "gta",
+    "price": 1000.0,
+    "stockQuantity": 10
+  }
+]

@@ -1,5 +1,6 @@
 package com.gamezone.service;
 
+import com.gamezone.model.accessories.Accessory;
 import com.gamezone.model.products.Console;
 import com.gamezone.model.products.Product;
 import com.gamezone.model.products.Videogame;
@@ -13,11 +14,13 @@ public class ProductService {
     private final ProductRepository repository;
     private final List<Console> consoles;
     private final List<Videogame> videogames;
+    private final AccessoryService accessoryService;
 
-    public ProductService() {
+    public ProductService(AccessoryService accessoryService) {
         this.repository = new ProductRepository();
         this.consoles = repository.loadConsoles();
         this.videogames = repository.loadVideogames();
+        this.accessoryService = accessoryService;
     }
 
     public boolean registerConsole(Console console) {
@@ -46,6 +49,7 @@ public class ProductService {
         List<Product> allProducts = new ArrayList<>();
         allProducts.addAll(consoles);
         allProducts.addAll(videogames);
+        allProducts.addAll(accessoryService.listAccessories());
         return allProducts;
     }
 
@@ -69,6 +73,10 @@ public class ProductService {
             if (v.getId().equalsIgnoreCase(id))
                 return v;
         }
+        for (Accessory a : accessoryService.listAccessories()) {
+            if (a.getId().equalsIgnoreCase(id))
+                return a;
+        }
         return null;
     }
 
@@ -89,6 +97,8 @@ public class ProductService {
             return repository.saveConsoles(consoles);
         } else if (product instanceof Videogame) {
             return repository.saveVideogames(videogames);
+        } else if (product instanceof Accessory) {
+            return accessoryService.addAccessory((Accessory) product);
         }
 
         return false;

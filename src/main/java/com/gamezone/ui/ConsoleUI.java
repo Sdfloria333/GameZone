@@ -1,15 +1,10 @@
 package com.gamezone.ui;
 
-import com.gamezone.model.persons.Customer;
-import com.gamezone.model.persons.Seller;
-import com.gamezone.model.products.Console;
-import com.gamezone.model.products.Product;
-import com.gamezone.model.products.Videogame;
-import com.gamezone.model.sales.Sale;
-import com.gamezone.model.sales.SaleDetail;
-import com.gamezone.service.PersonService;
-import com.gamezone.service.ProductService;
-import com.gamezone.service.SaleService;
+import com.gamezone.model.accessories.*;
+import com.gamezone.model.persons.*;
+import com.gamezone.model.products.*;
+import com.gamezone.model.sales.*;
+import com.gamezone.service.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -21,12 +16,15 @@ public class ConsoleUI {
     private final PersonService personService;
     private final SaleService saleService;
     private final Scanner scanner;
+    private final AccessoryService accessoryService;
 
-    public ConsoleUI(ProductService productService, PersonService personService, SaleService saleService) {
+    public ConsoleUI(ProductService productService, PersonService personService, SaleService saleService,
+            AccessoryService accessoryService) {
         this.productService = productService;
         this.personService = personService;
         this.saleService = saleService;
         this.scanner = new Scanner(System.in);
+        this.accessoryService = accessoryService;
     }
 
     public void start() {
@@ -59,6 +57,10 @@ public class ConsoleUI {
         System.out.println("8. Listar Todas las Ventas");
         System.out.println("9. Ver Historial de Compras de Cliente");
         System.out.println("10. Ver Historial de Ventas de Vendedor");
+        System.out.println("--- Gestion de Accesorios ---");
+        System.out.println("11. Registrar Accesorio");
+        System.out.println("12. Listar Todos los Accesorios");
+        System.out.println("13. Buscar Accesorios por Consola");
         System.out.println("0. Salir");
         System.out.print("Seleccione una opcion: ");
     }
@@ -75,6 +77,9 @@ public class ConsoleUI {
             case 8 -> listAllSales();
             case 9 -> viewCustomerHistory();
             case 10 -> viewSellerHistory();
+            case 11 -> registerAccessory();
+            case 12 -> listAccessories();
+            case 13 -> listAccessoriesByConsole();
             case 0 -> System.out.println("Saliendo del sistema GameZone. ¡Hasta luego!");
             default -> System.out.println("Opcion no valida. Intente de nuevo.");
         }
@@ -228,21 +233,40 @@ public class ConsoleUI {
             boolean addMore = true;
 
             while (addMore) {
-                System.out.print("ID Producto: ");
-                String productId = scanner.nextLine();
+                System.out.print("ID Producto o Accesorio: ");
+                String itemId = scanner.nextLine();
 
                 System.out.print("Cantidad: ");
                 int quantity = Integer.parseInt(scanner.nextLine());
 
-                Product product = productService.findProductById(productId);
-                if (product == null) {
-                    System.out.println("El producto no existe. Intente de nuevo.");
+                double price = 0.0;
+                boolean found = false;
+
+                // 1. Intentar buscar como Producto (Videojuego/Consola)
+                Product product = productService.findProductById(itemId);
+                if (product != null) {
+                    price = product.getPrice();
+                    found = true;
+                } else {
+                    // 2. Si no existe como producto, intentar buscar como Accesorio
+                    Accessory accessory = accessoryService.findById(itemId);
+                    if (accessory != null) {
+                        price = accessory.getPrice();
+                        found = true;
+                    }
+                }
+
+                // Si no se encontró en ninguna de las dos listas
+                if (!found) {
+                    System.out
+                            .println("El ID ingresado no corresponde a ningún producto o accesorio. Intente de nuevo.");
                     continue;
                 }
 
-                details.add(new SaleDetail(productId, quantity, product.getPrice()));
+                // Guardar el detalle usando el precio capturado
+                details.add(new SaleDetail(itemId, quantity, price));
 
-                System.out.print("¿Agregar otro producto? (s/n): ");
+                System.out.print("¿Agregar otro item? (s/n): ");
                 String resp = scanner.nextLine();
                 if (!resp.equalsIgnoreCase("s")) {
                     addMore = false;
@@ -302,6 +326,76 @@ public class ConsoleUI {
         for (Sale s : sales) {
             System.out
                     .println("Venta ID: " + s.getSaleId() + " | Fecha: " + s.getDate() + " | Total: $" + s.getTotal());
+        }
+    }
+
+    private void registerAccessory() {
+        System.out.println("\n--- Registrar Accesorio ---");
+        try {
+            System.out.print("Tipo (1. Control | 2. Cable | 3. Memoria): ");
+            int type = Integer.parseInt(scanner.nextLine());
+
+            System.out.print("ID: ");
+            String id = scanner.nextLine();
+            System.out.print("Titulo: ");
+            String title = scanner.nextLine();
+            System.out.print("Precio: ");
+            double price = Double.parseDouble(scanner.nextLine());
+            System.out.print("Stock: ");
+            int stock = Integer.parseInt(scanner.nextLine());
+            System.out.print("ID Consola Compatible: ");
+            List<String> compat = List.of(scanner.nextLine());
+
+            Accessory acc = null;
+            if (type == 1) {
+                System.out.print("Tipo Conexion: ");
+                acc = new Controller(id, title, price, stock, compat, scanner.nextLine());
+            } else if (type == 2) {
+                System.out.print("Longitud (metros): ");
+                double len = Double.parseDouble(scanner.nextLine());
+                System.out.print("Tipo Conector: ");
+                acc = new Cable(id, title, price, stock, compat, len, scanner.nextLine());
+            } else if (type == 3) {
+                System.out.print("Capacidad (GB): ");
+                int cap = Integer.parseInt(scanner.nextLine());
+                System.out.print("Tipo Memoria: ");
+                acc = new Memory(id, title, price, stock, compat, cap, scanner.nextLine());
+            }
+
+            if (acc != null && accessoryService.addAccessory(acc)) {
+                System.out.println("Accesorio registrado con exito.");
+            } else {
+                System.out.println("Error al registrar accesorio.");
+            }
+        } catch (Exception e) {
+            System.out.println("Error en el formato de datos ingresados.");
+        }
+    }
+
+    private void listAccessories() {
+        System.out.println("\n--- Accesorios Registrados ---");
+        List<Accessory> accessories = accessoryService.listAccessories();
+        if (accessories.isEmpty()) {
+            System.out.println("No hay accesorios registrados.");
+            return;
+        }
+        for (Accessory a : accessories) {
+            System.out.println(a.getDescription());
+        }
+    }
+
+    private void listAccessoriesByConsole() {
+        System.out.println("\n--- Accesorios por Consola ---");
+        System.out.print("ID de la Consola: ");
+        String consoleId = scanner.nextLine();
+
+        List<Accessory> accessories = accessoryService.findByConsole(consoleId);
+        if (accessories.isEmpty()) {
+            System.out.println("No hay accesorios compatibles con esta consola.");
+            return;
+        }
+        for (Accessory a : accessories) {
+            System.out.println(a.getDescription());
         }
     }
 }
