@@ -1,0 +1,65 @@
+[
+  {
+    "connectionType": "Inalámbrico",
+    "compatibleConsoleIds": [
+      "CONS01"
+    ],
+    "id": "ACC01",
+    "title": "Control PS5",
+    "price": 69.99,
+    "stockQuantity": 8
+  },
+  {
+    "length": 2.0,
+    "connectorType": "HDMI",
+    "compatibleConsoleIds": [
+      "CONS01"
+    ],
+    "id": "ACC02",
+    "title": "Cable HDMI",
+    "price": 15.5,
+    "stockQuantity": 25
+  },
+  {
+    "capacity": 128,
+    "memoryType": "microSD",
+    "compatibleConsoleIds": [
+      "CONS03"
+    ],
+    "id": "ACC03",
+    "title": "MicroSD 128GB",
+    "price": 29.99,
+    "stockQuantity": 15
+  },
+  {
+    "connectionType": "inalambrica",
+    "compatibleConsoleIds": [
+      "2"
+    ],
+    "id": "3",
+    "title": "control xbox",
+    "price": 1000.0,
+    "stockQuantity": 9
+  },
+  {
+    "connectionType": "1",
+    "compatibleConsoleIds": [
+      "1"
+    ],
+    "id": "1",
+    "title": "1",
+    "price": 1.0,
+    "stockQuantity": 1
+  },
+  {
+    "capacity": 10,
+    "memoryType": "usb",
+    "compatibleConsoleIds": [
+      "4"
+    ],
+    "id": "4",
+    "title": "memoria xbox",
+    "price": 1000.0,
+    "stockQuantity": 10
+  }
+]

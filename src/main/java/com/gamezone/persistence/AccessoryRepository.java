@@ -18,11 +18,11 @@ public class AccessoryRepository {
     private static final String ACCESSORIES_FILE = "src/main/data/accessories.json";
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public boolean saveAccessories(List<Accessory> accessories) {
+    public boolean saveAll(List<Accessory> accessories) {
         return saveToFile(ACCESSORIES_FILE, accessories);
     }
 
-    public List<Accessory> loadAccessories() {
+    public List<Accessory> loadAll() {
         return loadFromFile(ACCESSORIES_FILE);
     }
 

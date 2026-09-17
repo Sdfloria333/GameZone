@@ -233,21 +233,40 @@ public class ConsoleUI {
             boolean addMore = true;
 
             while (addMore) {
-                System.out.print("ID Producto: ");
-                String productId = scanner.nextLine();
+                System.out.print("ID Producto o Accesorio: ");
+                String itemId = scanner.nextLine();
 
                 System.out.print("Cantidad: ");
                 int quantity = Integer.parseInt(scanner.nextLine());
 
-                Product product = productService.findProductById(productId);
-                if (product == null) {
-                    System.out.println("El producto no existe. Intente de nuevo.");
+                double price = 0.0;
+                boolean found = false;
+
+                // 1. Intentar buscar como Producto (Videojuego/Consola)
+                Product product = productService.findProductById(itemId);
+                if (product != null) {
+                    price = product.getPrice();
+                    found = true;
+                } else {
+                    // 2. Si no existe como producto, intentar buscar como Accesorio
+                    Accessory accessory = accessoryService.findById(itemId);
+                    if (accessory != null) {
+                        price = accessory.getPrice();
+                        found = true;
+                    }
+                }
+
+                // Si no se encontró en ninguna de las dos listas
+                if (!found) {
+                    System.out
+                            .println("El ID ingresado no corresponde a ningún producto o accesorio. Intente de nuevo.");
                     continue;
                 }
 
-                details.add(new SaleDetail(productId, quantity, product.getPrice()));
+                // Guardar el detalle usando el precio capturado
+                details.add(new SaleDetail(itemId, quantity, price));
 
-                System.out.print("¿Agregar otro producto? (s/n): ");
+                System.out.print("¿Agregar otro item? (s/n): ");
                 String resp = scanner.nextLine();
                 if (!resp.equalsIgnoreCase("s")) {
                     addMore = false;

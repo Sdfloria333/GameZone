@@ -12,12 +12,15 @@ public class SaleService {
 
     private final SaleRepository repository;
     private final ProductService productService;
+    private final AccessoryService accessoryService;
     private final PersonService personService;
     private final List<Sale> sales;
 
-    public SaleService(ProductService productService, PersonService personService) {
+    // Inyección de AccessoryService añadida
+    public SaleService(ProductService productService, AccessoryService accessoryService, PersonService personService) {
         this.repository = new SaleRepository();
         this.productService = productService;
+        this.accessoryService = accessoryService;
         this.personService = personService;
         this.sales = repository.loadSales();
     }
@@ -27,6 +30,14 @@ public class SaleService {
             return false;
         }
 
+        // 1. Validar que la venta no exista previamente por ID
+        for (Sale s : sales) {
+            if (s.getSaleId().equalsIgnoreCase(saleId)) {
+                return false;
+            }
+        }
+
+        // 2. Validar que existan el cliente y el vendedor
         if (personService.findCustomerByIdentification(customerId) == null) {
             return false;
         }
@@ -35,14 +46,23 @@ public class SaleService {
             return false;
         }
 
+        // 3. Validar stock de forma unificada (Productos o Accesorios)
         for (SaleDetail detail : details) {
-            if (!productService.hasEnoughStock(detail.getProductId(), detail.getQuantity())) {
-                return false;
+            boolean hasProductStock = productService.hasEnoughStock(detail.getProductId(), detail.getQuantity());
+            boolean hasAccessoryStock = accessoryService.hasEnoughStock(detail.getProductId(), detail.getQuantity());
+
+            if (!hasProductStock && !hasAccessoryStock) {
+                return false; // Cancela la venta si no encuentra stock en ninguna categoría
             }
         }
 
+        // 4. Reducir stock delegando al servicio correspondiente
         for (SaleDetail detail : details) {
-            productService.reduceStock(detail.getProductId(), detail.getQuantity());
+            if (productService.findProductById(detail.getProductId()) != null) {
+                productService.reduceStock(detail.getProductId(), detail.getQuantity());
+            } else {
+                accessoryService.updateStock(detail.getProductId(), detail.getQuantity());
+            }
         }
 
         Sale newSale = new Sale(saleId, new Date(), customerId, sellerId, details);
