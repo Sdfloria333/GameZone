@@ -32,7 +32,7 @@ public class ConsoleUI {
     public void start() {
         int option = -1;
         while (option != 0) {
-            printMenu();
+              printMenu();
             try {
                 option = Integer.parseInt(scanner.nextLine());
                 executeOption(option);

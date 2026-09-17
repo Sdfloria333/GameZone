@@ -40,5 +40,19 @@
       }
     ],
     "total": 111.0
+  },
+  {
+    "saleId": "1",
+    "date": "2026-09-15 00:12:42",
+    "customerId": "1111",
+    "sellerId": "1001",
+    "details": [
+      {
+        "productId": "2",
+        "quantity": 1,
+        "unitPrice": 1000.0
+      }
+    ],
+    "total": 1000.0
   }
 ]
