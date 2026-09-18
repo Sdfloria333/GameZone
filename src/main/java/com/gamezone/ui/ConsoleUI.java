@@ -23,7 +23,7 @@ public class ConsoleUI {
     private final PromotionService promotionService;
     private final Scanner scanner;
 
-    // Constructor actualizado: inyecta ReturnService y PromotionService
+    
     public ConsoleUI(ProductService productService, PersonService personService, SaleService saleService,
                      AccessoryService accessoryService, ReturnService returnService, PromotionService promotionService) {
         this.productService = productService;
