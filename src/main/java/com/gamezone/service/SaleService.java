@@ -1,8 +1,11 @@
 package com.gamezone.service;
 
+import com.gamezone.model.products.Console;
+import com.gamezone.model.products.Product;
 import com.gamezone.model.promotions.Promotion;
 import com.gamezone.model.sales.Sale;
 import com.gamezone.model.sales.SaleDetail;
+import com.gamezone.model.warranties.ExtendedWarranty;
 import com.gamezone.persistence.SaleRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +18,11 @@ public class SaleService {
     private final PersonService personService;
     private final PromotionService promotionService;
     private final List<Sale> sales;
+    private WarrantyService warrantyService;
 
     // UPDATED CONSTRUCTOR: injects PromotionService
     public SaleService(ProductService productService, AccessoryService accessoryService,
-                       PersonService personService, PromotionService promotionService) {
+            PersonService personService, PromotionService promotionService) {
         this.repository = new SaleRepository();
         this.productService = productService;
         this.accessoryService = accessoryService;
@@ -27,7 +31,19 @@ public class SaleService {
         this.sales = repository.loadSales();
     }
 
+   
+    public void setWarrantyService(WarrantyService warrantyService) {
+        this.warrantyService = warrantyService;
+    }
+
+    
     public boolean registerSale(String saleId, String customerId, String sellerId, List<SaleDetail> details) {
+        return registerSale(saleId, customerId, sellerId, details, new ArrayList<>());
+    }
+
+   
+    public boolean registerSale(String saleId, String customerId, String sellerId, List<SaleDetail> details,
+            List<String> productIdsWithExtendedWarranty) {
         if (saleId == null || saleId.isBlank() || details == null || details.isEmpty()) {
             return false;
         }
@@ -85,6 +101,27 @@ public class SaleService {
             }
         }
 
+        // 7. WARRANTIES: automatic basic warranty for consoles, optional extended
+        // warranty
+        if (warrantyService != null) {
+            double totalWarrantyCost = 0.0;
+            for (SaleDetail detail : details) {
+                Product product = productService.findProductById(detail.getProductId());
+                if (product instanceof Console) {
+                    warrantyService.assignBasicWarranty(product, newSale, newSale.getDate());
+
+                    if (productIdsWithExtendedWarranty != null
+                            && productIdsWithExtendedWarranty.contains(product.getId())) {
+                        ExtendedWarranty extended = warrantyService.assignExtendedWarranty(product, newSale,
+                                newSale.getDate());
+                        totalWarrantyCost += extended.getAdditionalCost();
+                    }
+                }
+            }
+            newSale.setWarrantyCost(totalWarrantyCost);
+            newSale.setTotal(newSale.getTotal() + totalWarrantyCost);
+        }
+
         sales.add(newSale);
         return repository.saveSales(sales);
     }
@@ -113,12 +150,7 @@ public class SaleService {
         return filtered;
     }
 
-    /**
-     * Finds a sale by its unique identifier.
-     *
-     * @param saleId the identifier of the sale
-     * @return the sale if found, or null otherwise
-     */
+   
     public Sale findSaleById(String saleId) {
         for (Sale sale : sales) {
             if (sale.getSaleId().equalsIgnoreCase(saleId)) {
