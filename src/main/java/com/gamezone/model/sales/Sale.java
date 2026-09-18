@@ -14,6 +14,7 @@ public class Sale {
 
     private String appliedPromotionName;
     private double discountAmount;
+    private double warrantyCost;
 
     public Sale(String id, LocalDate date, String customerId, String sellerId, List<SaleDetail> details) {
         this.id = id;
@@ -23,6 +24,7 @@ public class Sale {
         this.details = details;
         this.appliedPromotionName = "Ninguna";
         this.discountAmount = 0.0;
+        this.warrantyCost = 0.0;
         this.total = getSubtotal();
     }
 
@@ -78,6 +80,24 @@ public class Sale {
         this.discountAmount = discountAmount;
     }
 
+    /**
+     * Returns the total additional cost of extended warranties in this sale.
+     *
+     * @return the extended warranty cost added to the total
+     */
+    public double getWarrantyCost() {
+        return warrantyCost;
+    }
+
+    /**
+     * Sets the total additional cost of extended warranties in this sale.
+     *
+     * @param warrantyCost the extended warranty cost added to the total
+     */
+    public void setWarrantyCost(double warrantyCost) {
+        this.warrantyCost = warrantyCost;
+    }
+
     public double getTotal() {
         return total;
     }
@@ -119,6 +139,9 @@ public class Sale {
             sb.append(String.format("Promoción Aplicada: %s (-$%.2f)\n", appliedPromotionName, discountAmount));
         } else {
             sb.append("Promoción Aplicada: Ninguna ($0.00)\n");
+        }
+        if (warrantyCost > 0) {
+            sb.append(String.format("Garantías Extendidas: +$%.2f\n", warrantyCost));
         }
         sb.append(String.format("TOTAL FINAL: $%.2f\n", total));
         sb.append("============================\n");
