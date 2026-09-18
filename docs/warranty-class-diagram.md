@@ -48,13 +48,14 @@ classDiagram
 
     namespace model_sales {
         class Sale {
-            -String saleId
-            -Date date
+            -String id
+            -LocalDate date
             -String customerId
             -String sellerId
             -List~SaleDetail~ details
             -double total
-            +findSaleById(String) Sale
+            +getSaleId() String
+            +getDate() LocalDate
         }
     }
 
@@ -99,3 +100,5 @@ classDiagram
     WarrantyRepository --> ProductService
     WarrantyService --> WarrantyRepository
 ```
+
+Este diagrama refleja **exactamente lo que existe hoy**: el modelo, la persistencia y el servicio de garantías están completos, pero no hay ninguna flecha hacia `ConsoleUI` ni una versión modificada de `SaleService.registerSale` — porque esa integración todavía no se ha hecho.

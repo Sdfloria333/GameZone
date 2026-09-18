@@ -3,10 +3,10 @@
 ## Integrantes del Equipo
 
 | Nombre Completo                | Código   | Rol             | Módulo Asignado                | Rama Git                 |
-|:-------------------------------|:---------|:---------------  -|:-------------------------------|:-------------------------|
-| Sebastián David Florián Cadena | [Código] | Líder Técnico      | Módulo de Ventas e Integración | `feature/sale-module`    |
-| Juan Manuel Otero Rueda        | [Código] |Desarrollador 1 y 2 | Módulo de Productos            | `feature/product-module` |
-
+|:-------------------------------|:---------|:----------------|:-------------------------------|:-------------------------|
+| Sebastián David Florián Cadena | [Código] | Líder Técnico   | Módulo de Ventas e Integración | `feature/sale-module`    |
+| Juan Manuel Otero Rueda        | [Código] | Desarrollador 1 | Módulo de Productos            | `feature/product-module` |
+| Oscar Sebastián Araujo Erazo   | [Código] | Desarrollador 2 | Módulo de Personas             | `feature/person-module`  |
 
 ---
 
@@ -34,7 +34,7 @@
 
 ### 3. Módulo de Personas
 
-* **Responsable:** Juan Manuel Otero Rueda (Desarrollador 2)
+* **Responsable:** Oscar Sebastián Araujo Erazo (Desarrollador 2)
 * **Clases:**
     * `Person.java` (Clase abstracta base)
     * `Customer.java` (Clase derivada)
@@ -70,7 +70,7 @@
 - [ ] Documentar el módulo con JavaDoc en inglés
 - [ ] Solicitar Pull Request hacia `develop`
 
-### Juan Manuel Otero Rueda (Desarrollador 2)
+### Oscar Sebastián Araujo Erazo (Desarrollador 2)
 
 - [ ] Crear la rama `feature/person-module`
 - [ ] Implementar la clase abstracta base `Person.java`
@@ -89,4 +89,4 @@
 * **`develop`**: Rama de integración del equipo.
 * **`feature/sale-module`**: Módulo de Ventas e Interfaz (Sebastián Florián)
 * **`feature/product-module`**: Módulo de Productos (Juan Otero)
-* **`feature/person-module`**: Módulo de Personas (Juan Otero)
+* **`feature/person-module`**: Módulo de Personas (Oscar Araujo)
