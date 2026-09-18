@@ -55,8 +55,13 @@ public class PromotionRepository {
 
     public List<Promotion> loadAll() {
         File file = new File(PROMOTIONS_FILE);
-        if (!file.exists()) {
-            return new ArrayList<>();
+
+        // SI EL ARCHIVO NO EXISTE O ESTÁ VACÍO, PRECARGAMOS LAS 3 PROMOCIONES QUE PIDE
+        // LA GUÍA
+        if (!file.exists() || file.length() == 0) {
+            List<Promotion> defaultPromotions = createDefaultPromotions();
+            saveAll(defaultPromotions); // Se persisten automáticamente
+            return defaultPromotions;
         }
 
         List<Promotion> promotions = new ArrayList<>();
@@ -69,8 +74,6 @@ public class PromotionRepository {
             JsonArray jsonArray = parsed.getAsJsonArray();
             for (JsonElement element : jsonArray) {
                 JsonObject jsonObject = element.getAsJsonObject();
-
-                // Leemos el discriminador guardado
                 String type = jsonObject.has("type") ? jsonObject.get("type").getAsString() : "";
 
                 switch (type) {
@@ -84,7 +87,6 @@ public class PromotionRepository {
                         promotions.add(gson.fromJson(jsonObject, BulkPurchaseDiscount.class));
                         break;
                     default:
-                        // Fallback por estructura si no viniera la propiedad 'type'
                         if (jsonObject.has("targetCategory")) {
                             promotions.add(gson.fromJson(jsonObject, CategoryDiscount.class));
                         } else if (jsonObject.has("minQuantity")) {
@@ -100,5 +102,27 @@ public class PromotionRepository {
         }
 
         return promotions;
+    }
+
+    // MÉTODO PRIVADO PARA CREAR LOS DATOS PRECARGADOS EXIGIDOS
+    private List<Promotion> createDefaultPromotions() {
+        List<Promotion> defaultList = new ArrayList<>();
+        LocalDate today = LocalDate.now();
+        LocalDate startDate = today.minusDays(5);
+        LocalDate endDate = today.plusMonths(1);
+
+        // 1. Promoción Porcentual General
+        defaultList.add(new PercentageDiscount(
+                "PROMO-01", "Descuento de Bienvenida 10%", startDate, endDate, 10.0));
+
+        // 2. Promoción por Categoría (Especial para VIDEOGAME)
+        defaultList.add(new CategoryDiscount(
+                "PROMO-02", "Super Descuento Videojuegos 15%", startDate, endDate, 15.0, "VIDEOGAME"));
+
+        // 3. Promoción por Volumen (3 o más productos)
+        defaultList.add(new BulkPurchaseDiscount(
+                "PROMO-03", "Descuento al por Mayor 20% (3+ items)", startDate, endDate, 3, 20.0));
+
+        return defaultList;
     }
 }

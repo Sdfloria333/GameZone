@@ -6,16 +6,19 @@ import java.util.List;
 public class Sale {
     private String id;
     private LocalDate date;
+    private String customerId;
+    private String sellerId;
     private List<SaleDetail> details;
     private double total;
 
-    // --- NUEVOS ATRIBUTOS EXIGIDOS ---
     private String appliedPromotionName;
     private double discountAmount;
 
-    public Sale(String id, LocalDate date, List<SaleDetail> details) {
+    public Sale(String id, LocalDate date, String customerId, String sellerId, List<SaleDetail> details) {
         this.id = id;
         this.date = date;
+        this.customerId = customerId;
+        this.sellerId = sellerId;
         this.details = details;
         this.appliedPromotionName = "Ninguna";
         this.discountAmount = 0.0;
@@ -32,7 +35,32 @@ public class Sale {
         return sum;
     }
 
-    // --- GETTERS Y SETTERS DE LOS NUEVOS ATRIBUTOS ---
+    // --- GETTERS Y SETTERS ---
+    public String getId() {
+        return id;
+    }
+
+    // Alias para compatibilidad con SaleService
+    public String getSaleId() {
+        return id;
+    }
+
+    public LocalDate getDate() {
+        return date;
+    }
+
+    public String getCustomerId() {
+        return customerId;
+    }
+
+    public String getSellerId() {
+        return sellerId;
+    }
+
+    public List<SaleDetail> getDetails() {
+        return details;
+    }
+
     public String getAppliedPromotionName() {
         return appliedPromotionName;
     }
@@ -49,18 +77,6 @@ public class Sale {
         this.discountAmount = discountAmount;
     }
 
-    public String getId() {
-        return id;
-    }
-
-    public LocalDate getDate() {
-        return date;
-    }
-
-    public List<SaleDetail> getDetails() {
-        return details;
-    }
-
     public double getTotal() {
         return total;
     }
@@ -69,12 +85,14 @@ public class Sale {
         this.total = total;
     }
 
-    // --- RECIBO CON DETALLE DE PROMOCIÓN ---
+    // --- RECIBO DE VENTA (REQUERIMIENTO DE LA GUÍA) ---
     public String generateReceipt() {
         StringBuilder sb = new StringBuilder();
         sb.append("===== FACTURA DE VENTA =====\n");
         sb.append("ID Venta: ").append(id).append("\n");
         sb.append("Fecha: ").append(date).append("\n");
+        sb.append("Cliente: ").append(customerId).append("\n");
+        sb.append("Vendedor: ").append(sellerId).append("\n");
         sb.append("----------------------------\n");
 
         if (details != null) {

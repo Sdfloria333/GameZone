@@ -1,11 +1,10 @@
 package com.gamezone.service;
 
+import com.gamezone.model.promotions.Promotion;
 import com.gamezone.model.sales.Sale;
 import com.gamezone.model.sales.SaleDetail;
 import com.gamezone.persistence.SaleRepository;
-
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class SaleService {
@@ -14,14 +13,17 @@ public class SaleService {
     private final ProductService productService;
     private final AccessoryService accessoryService;
     private final PersonService personService;
+    private final PromotionService promotionService;
     private final List<Sale> sales;
 
-    // Inyección de AccessoryService añadida
-    public SaleService(ProductService productService, AccessoryService accessoryService, PersonService personService) {
+    // CONSTRUCTOR ACTUALIZADO: Inyecta PromotionService
+    public SaleService(ProductService productService, AccessoryService accessoryService,
+            PersonService personService, PromotionService promotionService) {
         this.repository = new SaleRepository();
         this.productService = productService;
         this.accessoryService = accessoryService;
         this.personService = personService;
+        this.promotionService = promotionService; // <-- Se asigna el servicio
         this.sales = repository.loadSales();
     }
 
@@ -32,7 +34,7 @@ public class SaleService {
 
         // 1. Validar que la venta no exista previamente por ID
         for (Sale s : sales) {
-            if (s.getSaleId().equalsIgnoreCase(saleId)) {
+            if (s.getId().equalsIgnoreCase(saleId)) {
                 return false;
             }
         }
@@ -52,7 +54,7 @@ public class SaleService {
             boolean hasAccessoryStock = accessoryService.hasEnoughStock(detail.getProductId(), detail.getQuantity());
 
             if (!hasProductStock && !hasAccessoryStock) {
-                return false; // Cancela la venta si no encuentra stock en ninguna categoría
+                return false; // Cancela la venta si no encuentra stock suficiente
             }
         }
 
@@ -65,7 +67,24 @@ public class SaleService {
             }
         }
 
-        Sale newSale = new Sale(saleId, new Date(), customerId, sellerId, details);
+        // 5. Crear la venta inicial
+        Sale newSale = new Sale(saleId, java.time.LocalDate.now(), customerId, sellerId, details);
+
+        // 6. CÁLCULO Y APLICACIÓN AUTOMÁTICA DE PROMOCIONES (REQUERIMIENTO DE LA GUÍA)
+        if (promotionService != null) {
+            Promotion bestPromo = promotionService.findBestPromotionFor(newSale);
+            if (bestPromo != null) {
+                double discount = bestPromo.calculateDiscount(newSale);
+                newSale.setAppliedPromotionName(bestPromo.getName());
+                newSale.setDiscountAmount(discount);
+                newSale.setTotal(newSale.getSubtotal() - discount);
+            } else {
+                newSale.setAppliedPromotionName("Ninguna");
+                newSale.setDiscountAmount(0.0);
+                newSale.setTotal(newSale.getSubtotal());
+            }
+        }
+
         sales.add(newSale);
         return repository.saveSales(sales);
     }
