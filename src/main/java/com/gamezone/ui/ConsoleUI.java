@@ -1,5 +1,6 @@
 package com.gamezone.ui;
 
+import com.gamezone.model.promotions.*;
 import com.gamezone.model.accessories.*;
 import com.gamezone.model.persons.*;
 import com.gamezone.model.products.*;
@@ -7,6 +8,7 @@ import com.gamezone.model.returns.Return;
 import com.gamezone.model.sales.*;
 import com.gamezone.service.*;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
@@ -16,18 +18,31 @@ public class ConsoleUI {
     private final ProductService productService;
     private final PersonService personService;
     private final SaleService saleService;
-    private final Scanner scanner;
     private final AccessoryService accessoryService;
+ feature/return-module
     private final ReturnService returnService;
 
+    private final PromotionService promotionService; // <--- 1. NUEVO ATRIBUTO
+    private final Scanner scanner;
+ develop
+
+    // 1. CONSTRUCTOR ACTUALIZADO (Inyecta PromotionService)
     public ConsoleUI(ProductService productService, PersonService personService, SaleService saleService,
+ feature/return-module
             AccessoryService accessoryService, ReturnService returnService) {
+
+            AccessoryService accessoryService, PromotionService promotionService) {
+ develop
         this.productService = productService;
         this.personService = personService;
         this.saleService = saleService;
-        this.scanner = new Scanner(System.in);
         this.accessoryService = accessoryService;
+ feature/return-module
         this.returnService = returnService;
+
+        this.promotionService = promotionService;
+        this.scanner = new Scanner(System.in);
+ develop
     }
 
     public void start() {
@@ -38,7 +53,7 @@ public class ConsoleUI {
                 option = Integer.parseInt(scanner.nextLine());
                 executeOption(option);
             } catch (NumberFormatException e) {
-                System.out.println("Error: Ingrese un numero valido.");
+                System.out.println("Error: Ingrese un número válido.");
             }
         }
     }
@@ -47,31 +62,36 @@ public class ConsoleUI {
         System.out.println("\n==========================================");
         System.out.println("          GAMEZONE UNICESAR - SYSTEM       ");
         System.out.println("==========================================");
-        System.out.println("--- Gestion de Productos ---");
+        System.out.println("--- Gestión de Productos ---");
         System.out.println("1. Registrar Videojuego");
         System.out.println("2. Registrar Consola");
         System.out.println("3. Listar Todos los Productos");
-        System.out.println("--- Gestion de Personas ---");
+        System.out.println("--- Gestión de Personas ---");
         System.out.println("4. Registrar Cliente");
         System.out.println("5. Listar Clientes");
         System.out.println("6. Listar Vendedores");
-        System.out.println("--- Gestion de Ventas ---");
+        System.out.println("--- Gestión de Ventas ---");
         System.out.println("7. Registrar Venta");
         System.out.println("8. Listar Todas las Ventas");
         System.out.println("9. Ver Historial de Compras de Cliente");
         System.out.println("10. Ver Historial de Ventas de Vendedor");
-        System.out.println("--- Gestion de Accesorios ---");
+        System.out.println("--- Gestión de Accesorios ---");
         System.out.println("11. Registrar Accesorio");
         System.out.println("12. Listar Todos los Accesorios");
         System.out.println("13. Buscar Accesorios por Consola");
+feature/return-module
         System.out.println("--- Gestion de Devoluciones ---");
         System.out.println("16. Registrar Devolucion");
         System.out.println("16. Listar Todas las Devoluciones");
         System.out.println("17. Ver Devoluciones por Cliente");
         System.out.println("18. Ver Devoluciones por Venta");
         System.out.println("19. Consultar Balance Mensual");
+
+        System.out.println("--- Gestión de Promociones ---"); // <--- 2. SECCIÓN AGREGADA
+        System.out.println("14. Submenú de Promociones");
+develop
         System.out.println("0. Salir");
-        System.out.print("Seleccione una opcion: ");
+        System.out.print("Seleccione una opción: ");
     }
 
     private void executeOption(int option) {
@@ -89,37 +109,173 @@ public class ConsoleUI {
             case 11 -> registerAccessory();
             case 12 -> listAccessories();
             case 13 -> listAccessoriesByConsole();
+ feature/return-module
             case 15 -> registerReturn();
             case 16 -> listAllReturns();
             case 17 -> listReturnsByCustomer();
             case 18 -> listReturnsBySale();
             case 19 -> viewMonthlyBalance();
+
+            case 14 -> showPromotionsMenu(); // <--- 2. OPCIÓN EN SWITCH
+develop
             case 0 -> System.out.println("Saliendo del sistema GameZone. ¡Hasta luego!");
-            default -> System.out.println("Opcion no valida. Intente de nuevo.");
+            default -> System.out.println("Opción no válida. Intente de nuevo.");
         }
     }
+
+    // =========================================================================
+    // 3. MÉTODOS Y SUBMENÚ DE PROMOCIONES
+    // =========================================================================
+    private void showPromotionsMenu() {
+        boolean back = false;
+        while (!back) {
+            System.out.println("\n--- GESTIÓN DE PROMOCIONES ---");
+            System.out.println("1. Registrar Descuento Porcentual General");
+            System.out.println("2. Registrar Descuento por Categoría");
+            System.out.println("3. Registrar Descuento por Compra al Por Mayor");
+            System.out.println("4. Listar Todas las Promociones");
+            System.out.println("5. Listar Promociones Activas Hoy");
+            System.out.println("6. Volver al Menú Principal");
+            System.out.print("Seleccione una opción: ");
+
+            try {
+                int option = Integer.parseInt(scanner.nextLine());
+                switch (option) {
+                    case 1 -> createPercentageDiscount();
+                    case 2 -> createCategoryDiscount();
+                    case 3 -> createBulkDiscount();
+                    case 4 -> listAllPromotions();
+                    case 5 -> listActivePromotions();
+                    case 6 -> back = true;
+                    default -> System.out.println("Opción no válida.");
+                }
+            } catch (Exception e) {
+                System.out.println("Error en la entrada: " + e.getMessage());
+            }
+        }
+    }
+
+    private void createPercentageDiscount() {
+        System.out.println("\n--- Nuevo Descuento Porcentual ---");
+        try {
+            System.out.print("ID Promoción: ");
+            String id = scanner.nextLine();
+            System.out.print("Nombre: ");
+            String name = scanner.nextLine();
+            System.out.print("Fecha Inicio (YYYY-MM-DD): ");
+            LocalDate start = LocalDate.parse(scanner.nextLine());
+            System.out.print("Fecha Fin (YYYY-MM-DD): ");
+            LocalDate end = LocalDate.parse(scanner.nextLine());
+            System.out.print("Porcentaje (%): ");
+            double pct = Double.parseDouble(scanner.nextLine());
+
+            if (promotionService.registerPercentageDiscount(id, name, start, end, pct)) {
+                System.out.println("Promoción registrada exitosamente.");
+            } else {
+                System.out.println("Error: El ID ya existe o los datos son inválidos.");
+            }
+        } catch (Exception e) {
+            System.out.println("Error en el formato de datos ingresados.");
+        }
+    }
+
+    private void createCategoryDiscount() {
+        System.out.println("\n--- Nuevo Descuento por Categoría ---");
+        try {
+            System.out.print("ID Promoción: ");
+            String id = scanner.nextLine();
+            System.out.print("Nombre: ");
+            String name = scanner.nextLine();
+            System.out.print("Fecha Inicio (YYYY-MM-DD): ");
+            LocalDate start = LocalDate.parse(scanner.nextLine());
+            System.out.print("Fecha Fin (YYYY-MM-DD): ");
+            LocalDate end = LocalDate.parse(scanner.nextLine());
+            System.out.print("Porcentaje (%): ");
+            double pct = Double.parseDouble(scanner.nextLine());
+            System.out.print("Categoría (VIDEOGAME, CONSOLE, CONTROLLER, CABLE, MEMORY): ");
+            String category = scanner.nextLine().toUpperCase();
+
+            if (promotionService.registerCategoryDiscount(id, name, start, end, pct, category)) {
+                System.out.println("Promoción por categoría registrada exitosamente.");
+            } else {
+                System.out.println("Error al registrar la promoción.");
+            }
+        } catch (Exception e) {
+            System.out.println("Error en el formato de datos ingresados.");
+        }
+    }
+
+    private void createBulkDiscount() {
+        System.out.println("\n--- Nuevo Descuento por Compra al Por Mayor ---");
+        try {
+            System.out.print("ID Promoción: ");
+            String id = scanner.nextLine();
+            System.out.print("Nombre: ");
+            String name = scanner.nextLine();
+            System.out.print("Fecha Inicio (YYYY-MM-DD): ");
+            LocalDate start = LocalDate.parse(scanner.nextLine());
+            System.out.print("Fecha Fin (YYYY-MM-DD): ");
+            LocalDate end = LocalDate.parse(scanner.nextLine());
+            System.out.print("Cantidad Mínima de Unidades: ");
+            int minQty = Integer.parseInt(scanner.nextLine());
+            System.out.print("Porcentaje (%): ");
+            double pct = Double.parseDouble(scanner.nextLine());
+
+            if (promotionService.registerBulkPurchaseDiscount(id, name, start, end, minQty, pct)) {
+                System.out.println("Promoción al por mayor registrada exitosamente.");
+            } else {
+                System.out.println("Error al registrar la promoción.");
+            }
+        } catch (Exception e) {
+            System.out.println("Error en el formato de datos ingresados.");
+        }
+    }
+
+    private void listAllPromotions() {
+        System.out.println("\n--- LISTA DE TODAS LAS PROMOCIONES ---");
+        List<Promotion> list = promotionService.listAllPromotions();
+        if (list.isEmpty()) {
+            System.out.println("No hay promociones registradas.");
+            return;
+        }
+        for (Promotion p : list) {
+            System.out.printf("[%s] %s | Vigencia: %s a %s\n", p.getId(), p.getName(), p.getStartDate(),
+                    p.getEndDate());
+        }
+    }
+
+    private void listActivePromotions() {
+        System.out.println("\n--- PROMOCIONES VIGENTES HOY ---");
+        List<Promotion> list = promotionService.listActivePromotions();
+        if (list.isEmpty()) {
+            System.out.println("No hay promociones activas el día de hoy.");
+            return;
+        }
+        for (Promotion p : list) {
+            System.out.printf("[%s] %s | Vigencia: %s a %s\n", p.getId(), p.getName(), p.getStartDate(),
+                    p.getEndDate());
+        }
+    }
+
+    // =========================================================================
+    // MÉTODOS PREVIOS
+    // =========================================================================
 
     private void registerVideogame() {
         System.out.println("\n--- Registrar Videojuego ---");
         try {
             System.out.print("ID: ");
             String id = scanner.nextLine();
-
             System.out.print("Titulo: ");
             String title = scanner.nextLine();
-
             System.out.print("Precio: ");
             double price = Double.parseDouble(scanner.nextLine());
-
             System.out.print("Stock: ");
             int stock = Integer.parseInt(scanner.nextLine());
-
             System.out.print("Plataforma: ");
             String platform = scanner.nextLine();
-
             System.out.print("Genero: ");
             String genre = scanner.nextLine();
-
             System.out.print("Clasificacion de edad: ");
             String ageRating = scanner.nextLine();
 
@@ -139,22 +295,16 @@ public class ConsoleUI {
         try {
             System.out.print("ID: ");
             String id = scanner.nextLine();
-
             System.out.print("Titulo / Nombre: ");
             String title = scanner.nextLine();
-
             System.out.print("Precio: ");
             double price = Double.parseDouble(scanner.nextLine());
-
             System.out.print("Stock: ");
             int stock = Integer.parseInt(scanner.nextLine());
-
             System.out.print("Marca: ");
             String brand = scanner.nextLine();
-
             System.out.print("Modelo: ");
             String model = scanner.nextLine();
-
             System.out.print("Generacion: ");
             String generation = scanner.nextLine();
 
@@ -188,13 +338,10 @@ public class ConsoleUI {
         System.out.println("\n--- Registrar Cliente ---");
         System.out.print("Nombre: ");
         String name = scanner.nextLine();
-
         System.out.print("Identificacion / Cédula: ");
         String identification = scanner.nextLine();
-
         System.out.print("Telefono: ");
         String phone = scanner.nextLine();
-
         System.out.print("Email: ");
         String email = scanner.nextLine();
 
@@ -236,11 +383,9 @@ public class ConsoleUI {
         try {
             System.out.print("ID Venta: ");
             String saleId = scanner.nextLine();
-
-            System.out.print("Identificacion Cliente: ");
+            System.out.print("Identificación Cliente: ");
             String customerId = scanner.nextLine();
-
-            System.out.print("Identificacion Vendedor: ");
+            System.out.print("Identificación Vendedor: ");
             String sellerId = scanner.nextLine();
 
             List<SaleDetail> details = new ArrayList<>();
@@ -249,38 +394,50 @@ public class ConsoleUI {
             while (addMore) {
                 System.out.print("ID Producto o Accesorio: ");
                 String itemId = scanner.nextLine();
-
                 System.out.print("Cantidad: ");
                 int quantity = Integer.parseInt(scanner.nextLine());
 
                 double price = 0.0;
+                String category = "";
                 boolean found = false;
 
-                // 1. Intentar buscar como Producto (Videojuego/Consola)
                 Product product = productService.findProductById(itemId);
                 if (product != null) {
                     price = product.getPrice();
+                    if (product instanceof Videogame) {
+                        category = "VIDEOGAME";
+                    } else if (product instanceof Console) {
+                        category = "CONSOLE";
+                    } else {
+                        category = "PRODUCT";
+                    }
                     found = true;
                 } else {
-                    // 2. Si no existe como producto, intentar buscar como Accesorio
                     Accessory accessory = accessoryService.findById(itemId);
                     if (accessory != null) {
                         price = accessory.getPrice();
+                        if (accessory instanceof Controller) {
+                            category = "CONTROLLER";
+                        } else if (accessory instanceof Cable) {
+                            category = "CABLE";
+                        } else if (accessory instanceof Memory) {
+                            category = "MEMORY";
+                        } else {
+                            category = "ACCESSORY";
+                        }
                         found = true;
                     }
                 }
 
-                // Si no se encontró en ninguna de las dos listas
                 if (!found) {
                     System.out
                             .println("El ID ingresado no corresponde a ningún producto o accesorio. Intente de nuevo.");
                     continue;
                 }
 
-                // Guardar el detalle usando el precio capturado
-                details.add(new SaleDetail(itemId, quantity, price));
+                details.add(new SaleDetail(itemId, category, quantity, price));
 
-                System.out.print("¿Agregar otro item? (s/n): ");
+                System.out.print("¿Agregar otro ítem? (s/n): ");
                 String resp = scanner.nextLine();
                 if (!resp.equalsIgnoreCase("s")) {
                     addMore = false;
@@ -288,7 +445,7 @@ public class ConsoleUI {
             }
 
             if (saleService.registerSale(saleId, customerId, sellerId, details)) {
-                System.out.println("Venta registrada y guardada con exito.");
+                System.out.println("Venta registrada y guardada con éxito.");
             } else {
                 System.out.println("Error al procesar la venta. Verifique cliente, vendedor o stock disponible.");
             }

@@ -1,0 +1,28 @@
+[
+  {
+    "percentage": 10.0,
+    "id": "PROMO-01",
+    "name": "Descuento de Bienvenida 10%",
+    "startDate": "2026-09-12",
+    "endDate": "2026-10-17",
+    "type": "PERCENTAGE"
+  },
+  {
+    "percentage": 15.0,
+    "targetCategory": "VIDEOGAME",
+    "id": "PROMO-02",
+    "name": "Super Descuento Videojuegos 15%",
+    "startDate": "2026-09-12",
+    "endDate": "2026-10-17",
+    "type": "CATEGORY"
+  },
+  {
+    "minQuantity": 3,
+    "percentage": 20.0,
+    "id": "PROMO-03",
+    "name": "Descuento al por Mayor 20% (3+ items)",
+    "startDate": "2026-09-12",
+    "endDate": "2026-10-17",
+    "type": "BULK"
+  }
+]
