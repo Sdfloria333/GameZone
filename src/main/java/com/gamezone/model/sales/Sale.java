@@ -3,9 +3,6 @@ package com.gamezone.model.sales;
 import java.util.Date;
 import java.util.List;
 
-/**
- * Represents a sale transaction in GameZone Unicesar.
- */
 public class Sale {
     private String saleId;
     private Date date;
@@ -23,11 +20,6 @@ public class Sale {
         this.total = calculateTotal();
     }
 
-    /**
-     * Calculates the total amount of the sale based on its details.
-     *
-     * @return Total price of the sale.
-     */
     public double calculateTotal() {
         double sum = 0.0;
         if (this.details != null) {
