@@ -35,4 +35,4 @@
 | Class | Responsibility | Justification |
 | :--- | :--- | :--- |
 | **`Promotion`** | Single-instance validation (`isActive(LocalDate currentDate)`) | Each promotion instance holds its own start and end dates. Applying the **Information Expert** pattern, the entity autonomously answers whether it is active for a given date. |
-| **`PromotionService`** | Orchestration and filtering | The service retrieves the current date, iterates over registered promotions, and delegates to each promotion's `isActive(...)` method to filter active candidates before selecting the highest discount. |
+| **`PromotionService`** | Orchestration and filtering | The service retrieves the current date, iterates over registered promotions, and delegates to each promotion's `isActive(...)` method to filter active candidates before selecting the highest discount. 
