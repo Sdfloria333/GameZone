@@ -14,11 +14,6 @@ public class SaleDetail {
         this.unitPrice = unitPrice;
     }
 
-    /**
-     * Calculates the subtotal for this item detail.
-     *
-     * @return Subtotal amount.
-     */
     public double getSubtotal() {
         return this.quantity * this.unitPrice;
     }

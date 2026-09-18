@@ -74,4 +74,14 @@ public class Sale {
     public double getTotal() {
         return total;
     }
+
+    public double getSubtotal() {
+        double sum = 0.0;
+        if (this.details != null) {
+            for (SaleDetail detail : this.details) {
+                sum += detail.getSubtotal(); // <--- Aquí llamas al getSubtotal() que TIENE SaleDetail
+            }
+        }
+        return sum;
+    }
 }
