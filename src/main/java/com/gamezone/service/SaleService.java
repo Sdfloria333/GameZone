@@ -112,4 +112,19 @@ public class SaleService {
         }
         return filtered;
     }
+
+    /**
+     * Finds a sale by its unique identifier.
+     *
+     * @param saleId the identifier of the sale
+     * @return the sale if found, or null otherwise
+     */
+    public Sale findSaleById(String saleId) {
+        for (Sale sale : sales) {
+            if (sale.getSaleId().equalsIgnoreCase(saleId)) {
+                return sale;
+            }
+        }
+        return null;
+    }
 }

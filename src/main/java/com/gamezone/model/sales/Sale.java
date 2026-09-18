@@ -2,6 +2,9 @@ package com.gamezone.model.sales;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
 public class Sale {
     private String id;
@@ -81,11 +84,24 @@ public class Sale {
         return total;
     }
 
+ feature/return-module
+
+    /**
+     * Checks whether this sale is still within the 30-day return window.
+     *
+     * @return true if the current date is within 30 days of the sale date
+     */
+    public boolean canBeReturned() {
+        LocalDate saleDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate today = LocalDate.now();
+        long daysSinceSale = ChronoUnit.DAYS.between(saleDate, today);
+        return daysSinceSale >= 0 && daysSinceSale <= 30;
+
     public void setTotal(double total) {
         this.total = total;
     }
 
-    // --- RECIBO DE VENTA (REQUERIMIENTO DE LA GUÍA) ---
+   
     public String generateReceipt() {
         StringBuilder sb = new StringBuilder();
         sb.append("===== FACTURA DE VENTA =====\n");
@@ -113,5 +129,6 @@ public class Sale {
         sb.append("============================\n");
 
         return sb.toString();
+ develop
     }
 }
