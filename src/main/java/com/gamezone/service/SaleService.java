@@ -94,7 +94,6 @@ public class SaleService {
         return filtered;
     }
 
-    // Agregar dentro de SaleService.java, junto a los demás métodos
 
     /**
      * Finds a sale by its unique identifier.
