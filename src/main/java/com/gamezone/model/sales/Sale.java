@@ -2,6 +2,9 @@ package com.gamezone.model.sales;
 
 import java.util.Date;
 import java.util.List;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
 
 /**
  * Represents a sale transaction in GameZone Unicesar.
@@ -81,5 +84,18 @@ public class Sale {
 
     public double getTotal() {
         return total;
+    }
+
+
+    /**
+     * Checks whether this sale is still within the 30-day return window.
+     *
+     * @return true if the current date is within 30 days of the sale date
+     */
+    public boolean canBeReturned() {
+        LocalDate saleDate = date.toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+        LocalDate today = LocalDate.now();
+        long daysSinceSale = ChronoUnit.DAYS.between(saleDate, today);
+        return daysSinceSale >= 0 && daysSinceSale <= 30;
     }
 }
