@@ -1,26 +1,28 @@
 package com.gamezone.model.sales;
 
-import java.util.Date;
+import java.time.LocalDate;
 import java.util.List;
 
 public class Sale {
-    private String saleId;
-    private Date date;
-    private String customerId;
-    private String sellerId;
+    private String id;
+    private LocalDate date;
     private List<SaleDetail> details;
     private double total;
 
-    public Sale(String saleId, Date date, String customerId, String sellerId, List<SaleDetail> details) {
-        this.saleId = saleId;
+    // --- NUEVOS ATRIBUTOS EXIGIDOS ---
+    private String appliedPromotionName;
+    private double discountAmount;
+
+    public Sale(String id, LocalDate date, List<SaleDetail> details) {
+        this.id = id;
         this.date = date;
-        this.customerId = customerId;
-        this.sellerId = sellerId;
         this.details = details;
-        this.total = calculateTotal();
+        this.appliedPromotionName = "Ninguna";
+        this.discountAmount = 0.0;
+        this.total = getSubtotal();
     }
 
-    public double calculateTotal() {
+    public double getSubtotal() {
         double sum = 0.0;
         if (this.details != null) {
             for (SaleDetail detail : this.details) {
@@ -30,58 +32,68 @@ public class Sale {
         return sum;
     }
 
-    public String getSaleId() {
-        return saleId;
+    // --- GETTERS Y SETTERS DE LOS NUEVOS ATRIBUTOS ---
+    public String getAppliedPromotionName() {
+        return appliedPromotionName;
     }
 
-    public void setSaleId(String saleId) {
-        this.saleId = saleId;
+    public void setAppliedPromotionName(String appliedPromotionName) {
+        this.appliedPromotionName = appliedPromotionName;
     }
 
-    public Date getDate() {
+    public double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    public void setDiscountAmount(double discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public LocalDate getDate() {
         return date;
-    }
-
-    public void setDate(Date date) {
-        this.date = date;
-    }
-
-    public String getCustomerId() {
-        return customerId;
-    }
-
-    public void setCustomerId(String customerId) {
-        this.customerId = customerId;
-    }
-
-    public String getSellerId() {
-        return sellerId;
-    }
-
-    public void setSellerId(String sellerId) {
-        this.sellerId = sellerId;
     }
 
     public List<SaleDetail> getDetails() {
         return details;
     }
 
-    public void setDetails(List<SaleDetail> details) {
-        this.details = details;
-        this.total = calculateTotal();
-    }
-
     public double getTotal() {
         return total;
     }
 
-    public double getSubtotal() {
-        double sum = 0.0;
-        if (this.details != null) {
-            for (SaleDetail detail : this.details) {
-                sum += detail.getSubtotal(); // <--- Aquí llamas al getSubtotal() que TIENE SaleDetail
+    public void setTotal(double total) {
+        this.total = total;
+    }
+
+    // --- RECIBO CON DETALLE DE PROMOCIÓN ---
+    public String generateReceipt() {
+        StringBuilder sb = new StringBuilder();
+        sb.append("===== FACTURA DE VENTA =====\n");
+        sb.append("ID Venta: ").append(id).append("\n");
+        sb.append("Fecha: ").append(date).append("\n");
+        sb.append("----------------------------\n");
+
+        if (details != null) {
+            for (SaleDetail d : details) {
+                sb.append(String.format("Producto: %s | Cant: %d | Precio: $%.2f | Subtotal: $%.2f\n",
+                        d.getProductId(), d.getQuantity(), d.getUnitPrice(), d.getSubtotal()));
             }
         }
-        return sum;
+
+        sb.append("----------------------------\n");
+        sb.append(String.format("Subtotal: $%.2f\n", getSubtotal()));
+        if (discountAmount > 0) {
+            sb.append(String.format("Promoción Aplicada: %s (-$%.2f)\n", appliedPromotionName, discountAmount));
+        } else {
+            sb.append("Promoción Aplicada: Ninguna ($0.00)\n");
+        }
+        sb.append(String.format("TOTAL FINAL: $%.2f\n", total));
+        sb.append("============================\n");
+
+        return sb.toString();
     }
 }
