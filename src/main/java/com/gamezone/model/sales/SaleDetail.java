@@ -5,20 +5,17 @@ package com.gamezone.model.sales;
  */
 public class SaleDetail {
     private String productId;
+    private String itemCategory;
     private int quantity;
     private double unitPrice;
 
-    public SaleDetail(String productId, int quantity, double unitPrice) {
+    public SaleDetail(String productId, String itemCategory, int quantity, double unitPrice) {
         this.productId = productId;
+        this.itemCategory = itemCategory;
         this.quantity = quantity;
         this.unitPrice = unitPrice;
     }
 
-    /**
-     * Calculates the subtotal for this item detail.
-     *
-     * @return Subtotal amount.
-     */
     public double getSubtotal() {
         return this.quantity * this.unitPrice;
     }
@@ -29,6 +26,14 @@ public class SaleDetail {
 
     public void setProductId(String productId) {
         this.productId = productId;
+    }
+
+    public String getItemCategory() { 
+        return itemCategory;
+    }
+
+    public void setItemCategory(String itemCategory) { 
+        this.itemCategory = itemCategory;
     }
 
     public int getQuantity() {

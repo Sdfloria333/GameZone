@@ -1,0 +1,34 @@
+[
+  {
+    "connectionType": "Inalámbrico",
+    "compatibleConsoleIds": [
+      "CONS01"
+    ],
+    "id": "ACC01",
+    "title": "Control PS5",
+    "price": 69.99,
+    "stockQuantity": 10
+  },
+  {
+    "length": 2.0,
+    "connectorType": "HDMI",
+    "compatibleConsoleIds": [
+      "CONS01"
+    ],
+    "id": "ACC02",
+    "title": "Cable HDMI",
+    "price": 15.5,
+    "stockQuantity": 25
+  },
+  {
+    "capacity": 128,
+    "memoryType": "microSD",
+    "compatibleConsoleIds": [
+      "CONS03"
+    ],
+    "id": "ACC03",
+    "title": "MicroSD 128GB",
+    "price": 29.99,
+    "stockQuantity": 15
+  }
+]

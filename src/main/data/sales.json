@@ -1,44 +1,25 @@
 [
   {
-    "saleId": "1001",
-    "date": "2026-09-07 09:28:36",
-    "customerId": "10000",
-    "sellerId": "100",
+    "id": "1",
+    "date": "2026-09-18",
+    "customerId": "1067",
+    "sellerId": "1001",
     "details": [
       {
-        "productId": "1",
-        "quantity": 2,
-        "unitPrice": 100.0
-      }
-    ],
-    "total": 200.0
-  },
-  {
-    "saleId": "1",
-    "date": "2026-09-07 21:31:15",
-    "customerId": "1",
-    "sellerId": "1",
-    "details": [
-      {
-        "productId": "1",
+        "productId": "2",
+        "itemCategory": "CONSOLE",
         "quantity": 1,
-        "unitPrice": 1.0
-      }
-    ],
-    "total": 1.0
-  },
-  {
-    "saleId": "1",
-    "date": "2026-09-07 21:32:41",
-    "customerId": "1",
-    "sellerId": "1",
-    "details": [
+        "unitPrice": 1000.0
+      },
       {
-        "productId": "1",
+        "productId": "ACC02",
+        "itemCategory": "PRODUCT",
         "quantity": 1,
-        "unitPrice": 111.0
+        "unitPrice": 15.5
       }
     ],
-    "total": 111.0
+    "total": 913.95,
+    "appliedPromotionName": "Descuento de Bienvenida 10%",
+    "discountAmount": 101.55000000000001
   }
 ]

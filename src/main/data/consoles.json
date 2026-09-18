@@ -1,0 +1,11 @@
+[
+  {
+    "brand": "xbox",
+    "model": "slim",
+    "generation": "last",
+    "id": "2",
+    "title": "xbox",
+    "price": 1000.0,
+    "stockQuantity": 9
+  }
+]
