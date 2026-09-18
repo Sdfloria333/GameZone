@@ -19,30 +19,20 @@ public class ConsoleUI {
     private final PersonService personService;
     private final SaleService saleService;
     private final AccessoryService accessoryService;
- feature/return-module
     private final ReturnService returnService;
-
-    private final PromotionService promotionService; // <--- 1. NUEVO ATRIBUTO
+    private final PromotionService promotionService;
     private final Scanner scanner;
- develop
 
-    // 1. CONSTRUCTOR ACTUALIZADO (Inyecta PromotionService)
+    // Constructor actualizado: inyecta ReturnService y PromotionService
     public ConsoleUI(ProductService productService, PersonService personService, SaleService saleService,
- feature/return-module
-            AccessoryService accessoryService, ReturnService returnService) {
-
-            AccessoryService accessoryService, PromotionService promotionService) {
- develop
+                     AccessoryService accessoryService, ReturnService returnService, PromotionService promotionService) {
         this.productService = productService;
         this.personService = personService;
         this.saleService = saleService;
         this.accessoryService = accessoryService;
- feature/return-module
         this.returnService = returnService;
-
         this.promotionService = promotionService;
         this.scanner = new Scanner(System.in);
- develop
     }
 
     public void start() {
@@ -79,17 +69,14 @@ public class ConsoleUI {
         System.out.println("11. Registrar Accesorio");
         System.out.println("12. Listar Todos los Accesorios");
         System.out.println("13. Buscar Accesorios por Consola");
-feature/return-module
-        System.out.println("--- Gestion de Devoluciones ---");
-        System.out.println("16. Registrar Devolucion");
+        System.out.println("--- Gestión de Promociones ---");
+        System.out.println("14. Submenú de Promociones");
+        System.out.println("--- Gestión de Devoluciones ---");
+        System.out.println("15. Registrar Devolucion");
         System.out.println("16. Listar Todas las Devoluciones");
         System.out.println("17. Ver Devoluciones por Cliente");
         System.out.println("18. Ver Devoluciones por Venta");
         System.out.println("19. Consultar Balance Mensual");
-
-        System.out.println("--- Gestión de Promociones ---"); // <--- 2. SECCIÓN AGREGADA
-        System.out.println("14. Submenú de Promociones");
-develop
         System.out.println("0. Salir");
         System.out.print("Seleccione una opción: ");
     }
@@ -109,15 +96,12 @@ develop
             case 11 -> registerAccessory();
             case 12 -> listAccessories();
             case 13 -> listAccessoriesByConsole();
- feature/return-module
+            case 14 -> showPromotionsMenu();
             case 15 -> registerReturn();
             case 16 -> listAllReturns();
             case 17 -> listReturnsByCustomer();
             case 18 -> listReturnsBySale();
             case 19 -> viewMonthlyBalance();
-
-            case 14 -> showPromotionsMenu(); // <--- 2. OPCIÓN EN SWITCH
-develop
             case 0 -> System.out.println("Saliendo del sistema GameZone. ¡Hasta luego!");
             default -> System.out.println("Opción no válida. Intente de nuevo.");
         }

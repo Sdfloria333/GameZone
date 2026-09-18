@@ -7,7 +7,6 @@ import com.gamezone.model.sales.SaleDetail;
 import com.gamezone.persistence.ReturnRepository;
 
 import java.time.LocalDate;
-import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -150,7 +149,7 @@ public class ReturnService {
     public double generateMonthlyBalance(int month, int year) {
         double totalSales = 0.0;
         for (Sale sale : saleService.listSales()) {
-            LocalDate saleDate = sale.getDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
+            LocalDate saleDate = sale.getDate();
             if (saleDate.getMonthValue() == month && saleDate.getYear() == year) {
                 totalSales += sale.getTotal();
             }
