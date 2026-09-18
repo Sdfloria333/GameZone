@@ -4,10 +4,7 @@ import java.time.LocalDate;
 import com.gamezone.model.sales.Sale;
 import com.gamezone.model.sales.SaleDetail;
 
-/**
- * Concrete promotion applying a discount only when the sale total items meet or
- * exceed a minimum threshold.
- */
+
 public class BulkPurchaseDiscount extends Promotion {
     private int minQuantity;
     private double percentage;
