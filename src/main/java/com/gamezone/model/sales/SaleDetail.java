@@ -5,7 +5,7 @@ package com.gamezone.model.sales;
  */
 public class SaleDetail {
     private String productId;
-    private String itemCategory; // <--- AGREGAR ESTE ATRIBUTO
+    private String itemCategory;
     private int quantity;
     private double unitPrice;
 
