@@ -49,6 +49,27 @@ public class Return {
         this.refundAmount = calculateRefundAmount();
     }
 
+    /**
+     * Reconstructs an existing return from persisted data, preserving
+     * its original date and refund amount instead of recalculating them.
+     *
+     * @param returnId the unique identifier of the return
+     * @param date the original date of the return
+     * @param originalSale the sale this return refers to
+     * @param returnedProducts the products that were returned
+     * @param reason the reason for the return
+     * @param refundAmount the previously calculated refund amount
+     */
+    public Return(String returnId, LocalDate date, Sale originalSale,
+                  List<Product> returnedProducts, String reason, double refundAmount) {
+        this.returnId = returnId;
+        this.date = date;
+        this.originalSale = originalSale;
+        this.returnedProducts = returnedProducts;
+        this.reason = reason;
+        this.refundAmount = refundAmount;
+    }
+
     public String getReturnId() {
         return returnId;
     }
