@@ -3,6 +3,9 @@ package com.gamezone.persistence;
 import com.gamezone.model.sales.Sale;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializer;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
@@ -10,14 +13,27 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter; // 1. IMPORTAR FORMATTER
 import java.util.ArrayList;
 import java.util.List;
 
 public class SaleRepository {
 
     private static final String SALES_FILE = "src/main/data/sales.json";
+
+    // 2. Formateador que tolera fecha con u opcionalmente con hora "YYYY-MM-DD[
+    // HH:mm:ss]"
+    private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd[ HH:mm:ss]");
+
     private final Gson gson = new GsonBuilder()
-            .setDateFormat("yyyy-MM-dd HH:mm:ss")
+            .registerTypeAdapter(LocalDate.class,
+                    (JsonSerializer<LocalDate>) (src, typeOfSrc, context) -> new JsonPrimitive(src.toString()))
+            .registerTypeAdapter(LocalDate.class,
+                    (JsonDeserializer<LocalDate>) (json, typeOfT, context) -> {
+                        String dateStr = json.getAsString();
+                        return LocalDate.parse(dateStr, FORMATTER); // 3. USAR EL FORMATTER
+                    })
             .setPrettyPrinting()
             .create();
 
