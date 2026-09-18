@@ -1,19 +1,10 @@
 [
   {
-    "brand": "play station",
-    "model": "slim",
-    "generation": "last",
-    "id": "2",
-    "title": "play 5",
-    "price": 1000.0,
-    "stockQuantity": 7
-  },
-  {
     "brand": "xbox",
     "model": "slim",
     "generation": "last",
-    "id": "4",
-    "title": "xbox one",
+    "id": "2",
+    "title": "xbox",
     "price": 1000.0,
     "stockQuantity": 9
   }
