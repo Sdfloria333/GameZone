@@ -91,35 +91,34 @@ public class ProductService {
             return false;
         }
 
+        product.setStockQuantity(product.getStockQuantity() - quantity);
 
-/**
- * Restores stock for a product after a return is processed.
- * This is an additive method used by the returns module.
- *
- * @param productId the identifier of the product to restore
- * @param quantity the quantity to add back to stock
- * @return true if the stock was updated and persisted successfully
- */
-        public boolean restoreStock(String productId, int quantity) {
-            Product product = findProductById(productId);
-            if (product == null || quantity <= 0) {
-                return false;
-            }
+        if (product instanceof Console) {
+            return repository.saveConsoles(consoles);
+        } else if (product instanceof Videogame) {
+            return repository.saveVideogames(videogames);
+        } else if (product instanceof Accessory) {
+            return accessoryService.addAccessory((Accessory) product);
+        }
 
-            product.setStockQuantity(product.getStockQuantity() + quantity);
+        return false;
+    }
 
-            if (product instanceof Console) {
-                return repository.saveConsoles(consoles);
-            } else if (product instanceof Videogame) {
-                return repository.saveVideogames(videogames);
-            } else if (product instanceof Accessory) {
-                return accessoryService.addAccessory((Accessory) product);
-            }
-
+    /**
+     * Restores stock for a product after a return is processed.
+     * This is an additive method used by the returns module.
+     *
+     * @param productId the identifier of the product to restore
+     * @param quantity the quantity to add back to stock
+     * @return true if the stock was updated and persisted successfully
+     */
+    public boolean restoreStock(String productId, int quantity) {
+        Product product = findProductById(productId);
+        if (product == null || quantity <= 0) {
             return false;
         }
 
-        product.setStockQuantity(product.getStockQuantity() - quantity);
+        product.setStockQuantity(product.getStockQuantity() + quantity);
 
         if (product instanceof Console) {
             return repository.saveConsoles(consoles);
