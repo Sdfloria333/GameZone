@@ -123,6 +123,10 @@ public class PromotionRepository {
         defaultList.add(new BulkPurchaseDiscount(
                 "PROMO-03", "Descuento al por Mayor 20% (3+ items)", startDate, endDate, 3, 20.0));
 
+        // 4. Promoción por Categoría (Accesorios) - Ajuste de integración A1
+        defaultList.add(new CategoryDiscount(
+                "PROMO-04", "Descuento en Accesorios 12%", startDate, endDate, 12.0, "ACCESSORY"));
+
         return defaultList;
     }
 }
