@@ -11,6 +11,12 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gamezone.persistence.SaleRepository;
+import com.gamezone.persistence.WarrantyRepository.WarrantyRecord;
+import java.util.HashMap;
+import java.util.Map;
+
+
 /**
  * Provides business logic for managing warranties: assignment,
  * validity queries, and expiration alerts.
@@ -18,16 +24,54 @@ import java.util.List;
 public class WarrantyService {
 
     private final WarrantyRepository repository;
+    private final SaleRepository saleRepository;
+    private final ProductService productService;
     private final List<Warranty> warranties;
 
     /**
-     * Creates a new WarrantyService with the specified repository.
+     * Creates a new WarrantyService. Persisted records only hold
+     * identifiers, so sales and products are resolved here.
      *
      * @param repository the repository used to persist warranties
+     * @param saleRepository the repository used to resolve sales by id
+     * @param productService the service used to resolve products by id
      */
-    public WarrantyService(WarrantyRepository repository) {
+    public WarrantyService(WarrantyRepository repository, SaleRepository saleRepository,
+                           ProductService productService) {
         this.repository = repository;
-        this.warranties = repository.loadAll();
+        this.saleRepository = saleRepository;
+        this.productService = productService;
+        this.warranties = resolveRecords(repository.loadAll());
+    }
+    /**
+     * Converts persisted records into warranty objects by resolving the
+     * sale and product identifiers. Records with unresolved references
+     * are skipped.
+     *
+     * @param records the persisted warranty records
+     * @return the resolved warranties
+     */
+    private List<Warranty> resolveRecords(List<WarrantyRecord> records) {
+        List<Warranty> resolved = new ArrayList<>();
+        Map<String, Sale> salesById = new HashMap<>();
+        for (Sale s : saleRepository.loadSales()) {
+            salesById.put(s.getSaleId().toLowerCase(), s);
+        }
+
+        for (WarrantyRecord record : records) {
+            Product product = productService.findProductById(record.getProductId());
+            Sale sale = salesById.get(record.getSaleId().toLowerCase());
+            if (product == null || sale == null) {
+                continue;
+            }
+            LocalDate start = LocalDate.parse(record.getStartDate());
+            if ("BASIC".equals(record.getType())) {
+                resolved.add(new BasicWarranty(record.getWarrantyId(), product, sale, start));
+            } else if ("EXTENDED".equals(record.getType())) {
+                resolved.add(new ExtendedWarranty(record.getWarrantyId(), product, sale, start));
+            }
+        }
+        return resolved;
     }
 
     /**
