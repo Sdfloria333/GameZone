@@ -18,23 +18,22 @@ public class SaleService {
     private final PersonService personService;
     private final PromotionService promotionService;
     private final List<Sale> sales;
-    private WarrantyService warrantyService;
+    private final WarrantyService warrantyService;
 
     // UPDATED CONSTRUCTOR: injects PromotionService
     public SaleService(ProductService productService, AccessoryService accessoryService,
-            PersonService personService, PromotionService promotionService) {
+                       PersonService personService, PromotionService promotionService,
+                       WarrantyService warrantyService) {
         this.repository = new SaleRepository();
         this.productService = productService;
         this.accessoryService = accessoryService;
         this.personService = personService;
-        this.promotionService = promotionService; // <-- service is assigned
+        this.promotionService = promotionService;
+        this.warrantyService = warrantyService;
         this.sales = repository.loadSales();
     }
 
-   
-    public void setWarrantyService(WarrantyService warrantyService) {
-        this.warrantyService = warrantyService;
-    }
+    
 
     
     public boolean registerSale(String saleId, String customerId, String sellerId, List<SaleDetail> details) {
