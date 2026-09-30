@@ -33,7 +33,7 @@ public class SaleService {
         this.sales = repository.loadSales();
     }
 
-    
+
 
     
     public boolean registerSale(String saleId, String customerId, String sellerId, List<SaleDetail> details) {
