@@ -63,19 +63,22 @@ classDiagram
         class WarrantyRepository {
             -String WARRANTIES_FILE
             -Gson gson
-            -SaleService saleService
-            -ProductService productService
-            +WarrantyRepository(SaleService, ProductService)
+            +WarrantyRepository()
             +saveAll(List~Warranty~) boolean
             +loadAll() List~Warranty~
+        }
+        class SaleRepository {
+            +loadSales() List~Sale~
         }
     }
 
     namespace service {
-        class WarrantyService {
+         class WarrantyService {
             -WarrantyRepository repository
+            -SaleRepository saleRepository
+            -ProductService productService
             -List~Warranty~ warranties
-            +WarrantyService(WarrantyRepository)
+            +WarrantyService(WarrantyRepository, SaleRepository, ProductService)
             +assignBasicWarranty(Product, Sale, LocalDate) BasicWarranty
             +assignExtendedWarranty(Product, Sale, LocalDate) ExtendedWarranty
             +findWarrantyByProduct(String, String) Warranty
@@ -83,7 +86,10 @@ classDiagram
             +listActiveWarranties() List~Warranty~
             +listWarrantiesExpiringSoon(int) List~Warranty~
         }
+        
         class SaleService {
+            -WarrantyService warrantyService
+            +SaleService(ProductService, AccessoryService, PersonService, PromotionService, WarrantyService)
             +findSaleById(String) Sale
         }
         class ProductService {
@@ -96,8 +102,9 @@ classDiagram
     Warranty "*" --> "1" Product : product
     Warranty "*" --> "1" Sale : sale
     WarrantyRepository ..> Warranty
-    WarrantyRepository --> SaleService
-    WarrantyRepository --> ProductService
+    WarrantyService --> SaleRepository
+    WarrantyService --> ProductService
+    SaleService --> WarrantyService
     WarrantyService --> WarrantyRepository
 ```
 
