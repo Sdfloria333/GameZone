@@ -21,16 +21,12 @@ public class Main {
                 AccessoryService accessoryService = new AccessoryService();
                 ProductService productService = new ProductService(accessoryService);
                 PersonService personService = new PersonService();
-
                 // 2. SaleService recibe los 4 servicios (incluyendo PromotionService)
                 SaleService saleService = new SaleService(productService, accessoryService, personService,
-                                promotionService);
-
+                        promotionService);
                 // Se agrega el módulo de devoluciones
-                ReturnRepository returnRepository = new ReturnRepository(saleService, productService);
-                ReturnService returnService = new ReturnService(returnRepository, saleService, productService);
-
-                // Warranty module: injected into SaleService by setter to avoid a circular
+                ReturnRepository returnRepository = new ReturnRepository(saleService, productService, accessoryService);
+                ReturnService returnService = new ReturnService(returnRepository, saleService, productService, accessoryService);                // Warranty module: injected into SaleService by setter to avoid a circular
                 // dependency
                 WarrantyRepository warrantyRepository = new WarrantyRepository(saleService, productService);
                 WarrantyService warrantyService = new WarrantyService(warrantyRepository);
