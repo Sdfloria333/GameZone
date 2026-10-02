@@ -17,43 +17,45 @@ public class SaleService {
     private final AccessoryService accessoryService;
     private final PersonService personService;
     private final PromotionService promotionService;
-    private final List sales;
+    private final List<Sale> sales;
     private WarrantyService warrantyService;
 
+    // UPDATED CONSTRUCTOR: injects PromotionService
     public SaleService(ProductService productService, AccessoryService accessoryService,
             PersonService personService, PromotionService promotionService) {
         this.repository = new SaleRepository();
         this.productService = productService;
         this.accessoryService = accessoryService;
         this.personService = personService;
-        this.promotionService = promotionService;
+        this.promotionService = promotionService; // <-- service is assigned
         this.sales = repository.loadSales();
     }
 
+   
     public void setWarrantyService(WarrantyService warrantyService) {
         this.warrantyService = warrantyService;
     }
 
-    public boolean registerSale(String saleId, String customerId, String sellerId, List details) {
+    
+    public boolean registerSale(String saleId, String customerId, String sellerId, List<SaleDetail> details) {
         return registerSale(saleId, customerId, sellerId, details, new ArrayList<>());
     }
 
-    public boolean registerSale(String saleId, String customerId, String sellerId, List details,
-            List productIdsWithExtendedWarranty) {
-        
-        // 1. Validar que la venta tenga ID e ítems
+   
+    public boolean registerSale(String saleId, String customerId, String sellerId, List<SaleDetail> details,
+            List<String> productIdsWithExtendedWarranty) {
         if (saleId == null || saleId.isBlank() || details == null || details.isEmpty()) {
             return false;
         }
 
-        // Validar ID repetido
+        // 1. Validate that the sale does not already exist by ID
         for (Sale s : sales) {
             if (s.getId().equalsIgnoreCase(saleId)) {
                 return false;
             }
         }
 
-        // 2. Validar Cliente y Vendedor
+        // 2. Validate that the customer and the seller exist
         if (personService.findCustomerByIdentification(customerId) == null) {
             return false;
         }
@@ -62,20 +64,29 @@ public class SaleService {
             return false;
         }
 
-        // 3. Validar Stock disponible (sin modificarlo todavía)
+        // 3. Validate stock in a unified way (Products or Accessories)
         for (SaleDetail detail : details) {
             boolean hasProductStock = productService.hasEnoughStock(detail.getProductId(), detail.getQuantity());
             boolean hasAccessoryStock = accessoryService.hasEnoughStock(detail.getProductId(), detail.getQuantity());
 
             if (!hasProductStock && !hasAccessoryStock) {
-                return false; // Cancela si no hay stock suficiente
+                return false; // Cancels the sale if there is not enough stock
             }
         }
 
-        // 4. Crear objeto de Venta con subtotal
+        // 4. Reduce stock by delegating to the corresponding service
+        for (SaleDetail detail : details) {
+            if (productService.findProductById(detail.getProductId()) != null) {
+                productService.reduceStock(detail.getProductId(), detail.getQuantity());
+            } else {
+                accessoryService.updateStock(detail.getProductId(), detail.getQuantity());
+            }
+        }
+
+        // 5. Create the initial sale
         Sale newSale = new Sale(saleId, java.time.LocalDate.now(), customerId, sellerId, details);
 
-        // 5. Aplicar Promoción (Calculado sobre el subtotal)
+        // 6. AUTOMATIC PROMOTION CALCULATION AND APPLICATION (REQUIRED BY THE GUIDE)
         if (promotionService != null) {
             Promotion bestPromo = promotionService.findBestPromotionFor(newSale);
             if (bestPromo != null) {
@@ -90,7 +101,8 @@ public class SaleService {
             }
         }
 
-        // 6. Aplicar Garantías (Garantía básica $0 + Extendida si aplica)
+        // 7. WARRANTIES: automatic basic warranty for consoles, optional extended
+        // warranty
         if (warrantyService != null) {
             double totalWarrantyCost = 0.0;
             for (SaleDetail detail : details) {
@@ -110,26 +122,16 @@ public class SaleService {
             newSale.setTotal(newSale.getTotal() + totalWarrantyCost);
         }
 
-        // 7. AHORA SÍ REDUCIR STOCK (MOVIDO AQUÍ SEGÚN GUÍA A3)
-        for (SaleDetail detail : details) {
-            if (productService.findProductById(detail.getProductId()) != null) {
-                productService.reduceStock(detail.getProductId(), detail.getQuantity());
-            } else {
-                accessoryService.updateStock(detail.getProductId(), detail.getQuantity());
-            }
-        }
-
-        // 8. Persistir y Guardar Venta
         sales.add(newSale);
         return repository.saveSales(sales);
     }
 
-    public List listSales() {
+    public List<Sale> listSales() {
         return sales;
     }
 
-    public List listSalesByCustomer(String customerId) {
-        List filtered = new ArrayList<>();
+    public List<Sale> listSalesByCustomer(String customerId) {
+        List<Sale> filtered = new ArrayList<>();
         for (Sale sale : sales) {
             if (sale.getCustomerId().equalsIgnoreCase(customerId)) {
                 filtered.add(sale);
@@ -138,8 +140,8 @@ public class SaleService {
         return filtered;
     }
 
-    public List listSalesBySeller(String sellerId) {
-        List filtered = new ArrayList<>();
+    public List<Sale> listSalesBySeller(String sellerId) {
+        List<Sale> filtered = new ArrayList<>();
         for (Sale sale : sales) {
             if (sale.getSellerId().equalsIgnoreCase(sellerId)) {
                 filtered.add(sale);
@@ -148,6 +150,7 @@ public class SaleService {
         return filtered;
     }
 
+   
     public Sale findSaleById(String saleId) {
         for (Sale sale : sales) {
             if (sale.getSaleId().equalsIgnoreCase(saleId)) {
