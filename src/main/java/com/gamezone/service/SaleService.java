@@ -1,5 +1,8 @@
 package com.gamezone.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.gamezone.model.products.Console;
 import com.gamezone.model.products.Product;
 import com.gamezone.model.promotions.Promotion;
@@ -7,8 +10,6 @@ import com.gamezone.model.sales.Sale;
 import com.gamezone.model.sales.SaleDetail;
 import com.gamezone.model.warranties.ExtendedWarranty;
 import com.gamezone.persistence.SaleRepository;
-import java.util.ArrayList;
-import java.util.List;
 
 public class SaleService {
 
@@ -31,17 +32,14 @@ public class SaleService {
         this.sales = repository.loadSales();
     }
 
-   
     public void setWarrantyService(WarrantyService warrantyService) {
         this.warrantyService = warrantyService;
     }
 
-    
     public boolean registerSale(String saleId, String customerId, String sellerId, List<SaleDetail> details) {
         return registerSale(saleId, customerId, sellerId, details, new ArrayList<>());
     }
 
-   
     public boolean registerSale(String saleId, String customerId, String sellerId, List<SaleDetail> details,
             List<String> productIdsWithExtendedWarranty) {
         if (saleId == null || saleId.isBlank() || details == null || details.isEmpty()) {
@@ -74,19 +72,10 @@ public class SaleService {
             }
         }
 
-        // 4. Reduce stock by delegating to the corresponding service
-        for (SaleDetail detail : details) {
-            if (productService.findProductById(detail.getProductId()) != null) {
-                productService.reduceStock(detail.getProductId(), detail.getQuantity());
-            } else {
-                accessoryService.updateStock(detail.getProductId(), detail.getQuantity());
-            }
-        }
-
-        // 5. Create the initial sale
+        // 4. Create the initial sale
         Sale newSale = new Sale(saleId, java.time.LocalDate.now(), customerId, sellerId, details);
 
-        // 6. AUTOMATIC PROMOTION CALCULATION AND APPLICATION (REQUIRED BY THE GUIDE)
+        // 5. AUTOMATIC PROMOTION CALCULATION AND APPLICATION (REQUIRED BY THE GUIDE)
         if (promotionService != null) {
             Promotion bestPromo = promotionService.findBestPromotionFor(newSale);
             if (bestPromo != null) {
@@ -101,7 +90,7 @@ public class SaleService {
             }
         }
 
-        // 7. WARRANTIES: automatic basic warranty for consoles, optional extended
+        // 6. WARRANTIES: automatic basic warranty for consoles, optional extended
         // warranty
         if (warrantyService != null) {
             double totalWarrantyCost = 0.0;
@@ -118,10 +107,20 @@ public class SaleService {
                     }
                 }
             }
+            // 7. Calculate total final: Subtotal - Discount + Extended Warranty Cost
             newSale.setWarrantyCost(totalWarrantyCost);
             newSale.setTotal(newSale.getTotal() + totalWarrantyCost);
         }
 
+        // 8. Reduce stock by delegating to the corresponding service
+        for (SaleDetail detail : details) {
+            if (productService.findProductById(detail.getProductId()) != null) {
+                productService.reduceStock(detail.getProductId(), detail.getQuantity());
+            } else {
+                accessoryService.updateStock(detail.getProductId(), detail.getQuantity());
+            }
+        }
+        // 9. Persist the sale
         sales.add(newSale);
         return repository.saveSales(sales);
     }
@@ -150,7 +149,6 @@ public class SaleService {
         return filtered;
     }
 
-   
     public Sale findSaleById(String saleId) {
         for (Sale sale : sales) {
             if (sale.getSaleId().equalsIgnoreCase(saleId)) {
