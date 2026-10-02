@@ -4,6 +4,7 @@ import com.gamezone.model.products.Product;
 import com.gamezone.model.returns.Return;
 import com.gamezone.model.sales.Sale;
 import com.gamezone.service.ProductService;
+import com.gamezone.service.AccessoryService;
 import com.gamezone.service.SaleService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -30,6 +31,7 @@ public class ReturnRepository {
 
     private final SaleService saleService;
     private final ProductService productService;
+    private final AccessoryService accessoryService;
 
     /**
      * Creates a new ReturnRepository with the services needed to
@@ -37,10 +39,13 @@ public class ReturnRepository {
      *
      * @param saleService the service used to resolve original sales
      * @param productService the service used to resolve returned products
+     * @param accessoryService the service used to resolve returned accessories
      */
-    public ReturnRepository(SaleService saleService, ProductService productService) {
+    public ReturnRepository(SaleService saleService, ProductService productService,
+                            AccessoryService accessoryService) {
         this.saleService = saleService;
         this.productService = productService;
+        this.accessoryService = accessoryService;
     }
 
     /**
@@ -126,7 +131,10 @@ public class ReturnRepository {
 
                 List<Product> products = new ArrayList<>();
                 for (String productId : record.productIds) {
-                    Product product = productService.findProductById(productId);
+                    Product product = accessoryService.findById(productId);
+                    if (product == null) {
+                        product = productService.findProductById(productId);
+                    }
                     if (product != null) {
                         products.add(product);
                     }
