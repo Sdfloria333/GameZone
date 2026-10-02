@@ -118,14 +118,17 @@ public class ProductService {
             return false;
         }
 
+        // Accessories are handled by AccessoryService, which adds the stock and persists it
+        if (product instanceof Accessory) {
+            return accessoryService.restoreStock(productId, quantity);
+        }
+
         product.setStockQuantity(product.getStockQuantity() + quantity);
 
         if (product instanceof Console) {
             return repository.saveConsoles(consoles);
         } else if (product instanceof Videogame) {
             return repository.saveVideogames(videogames);
-        } else if (product instanceof Accessory) {
-            return accessoryService.addAccessory((Accessory) product);
         }
 
         return false;
