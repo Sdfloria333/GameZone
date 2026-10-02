@@ -3,6 +3,7 @@ package com.gamezone.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gamezone.model.accessories.Accessory;
 import com.gamezone.model.products.Console;
 import com.gamezone.model.products.Product;
 import com.gamezone.model.promotions.Promotion;
@@ -23,7 +24,7 @@ public class SaleService {
 
     // UPDATED CONSTRUCTOR: injects PromotionService
     public SaleService(ProductService productService, AccessoryService accessoryService,
-            PersonService personService, PromotionService promotionService) {
+                       PersonService personService, PromotionService promotionService) {
         this.repository = new SaleRepository();
         this.productService = productService;
         this.accessoryService = accessoryService;
@@ -41,7 +42,7 @@ public class SaleService {
     }
 
     public boolean registerSale(String saleId, String customerId, String sellerId, List<SaleDetail> details,
-            List<String> productIdsWithExtendedWarranty) {
+                                List<String> productIdsWithExtendedWarranty) {
         if (saleId == null || saleId.isBlank() || details == null || details.isEmpty()) {
             return false;
         }
@@ -112,9 +113,17 @@ public class SaleService {
             newSale.setTotal(newSale.getTotal() + totalWarrantyCost);
         }
 
-        // 8. Reduce stock by delegating to the corresponding service
+        // 8. Reduce stock by delegating to the corresponding service. Accessories
+        // must be checked first: ProductService.findProductById() also returns
+        // accessories (Accessory extends Product), so routing them through
+        // ProductService.reduceStock() silently fails to persist the change
+        // (it ends up calling AccessoryService.addAccessory(), which rejects an
+        // already-existing id instead of updating its stock).
         for (SaleDetail detail : details) {
-            if (productService.findProductById(detail.getProductId()) != null) {
+            Product product = productService.findProductById(detail.getProductId());
+            if (product instanceof Accessory) {
+                accessoryService.updateStock(detail.getProductId(), detail.getQuantity());
+            } else if (product != null) {
                 productService.reduceStock(detail.getProductId(), detail.getQuantity());
             } else {
                 accessoryService.updateStock(detail.getProductId(), detail.getQuantity());
