@@ -32,9 +32,9 @@ public class Main {
                 SaleService saleService = new SaleService(productService, accessoryService,
                         personService, promotionService, warrantyService);
 
-// Returns module (unchanged, needs saleService so it stays after it)
-                ReturnRepository returnRepository = new ReturnRepository(saleService, productService);
-                ReturnService returnService = new ReturnService(returnRepository, saleService, productService);
+// Returns module: now also needs AccessoryService (added by A4)
+                ReturnRepository returnRepository = new ReturnRepository(saleService, productService, accessoryService);
+                ReturnService returnService = new ReturnService(returnRepository, saleService, productService, accessoryService);
 
                 // 3. Inicias la UI con sus referencias correspondientes (incluye devoluciones y
                 // promociones)

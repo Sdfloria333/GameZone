@@ -94,4 +94,23 @@ public class AccessoryService {
         acc.setStockQuantity(acc.getStockQuantity() - quantity);
         return repository.saveAll(accessories);
     }
+
+    /**
+     * Restores stock for an accessory after a return is processed.
+     * The given quantity is added back to the current stock and the
+     * change is persisted.
+     *
+     * @param accessoryId the identifier of the accessory to restore
+     * @param quantity the quantity to add back to stock (must be greater than 0)
+     * @return true if the stock was updated and persisted successfully,
+     *         false if the accessory does not exist or the quantity is invalid
+     */
+    public boolean restoreStock(String accessoryId, int quantity) {
+        Accessory acc = findById(accessoryId);
+        if (acc == null || quantity <= 0) {
+            return false;
+        }
+        acc.setStockQuantity(acc.getStockQuantity() + quantity);
+        return repository.saveAll(accessories);
+    }
 }

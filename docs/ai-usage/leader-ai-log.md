@@ -42,3 +42,14 @@ All AI-generated code was reviewed, validated, and modified manually to meet spe
 1. **Dependency Management:** Configured Maven dependencies (`pom.xml`) manually to include Google Gson `2.10.1`.
 2. **Method Wiring:** Adjusted method invocations inside `ConsoleUI.java` to ensure parameters matched the actual signatures of `ProductService` and `PersonService`.
 3. **Error Handling:** Enhanced exception catching (`try-catch` blocks for `NumberFormatException`) to prevent terminal crashes during menu interaction.
+
+### Entrada de Bitácora - Ajuste A3 (Líder Técnico)
+
+* **Fecha:** 2026-09-30
+* **Herramienta:** Gemini
+* **Fase y Rama:** Fase 3 / `refactor/unified-sale-registration`
+* **Objetivo:** Reorganizar el flujo del método `registerSale` en `SaleService` para cumplir con el orden estricto de integración (A3).
+* **Consulta:** "explicame mas facil porfavor te voy a pasar mi servicio sale que creo que es donde tengo que hacer todo [código enviado]"
+* **Respuesta:** Se identificó que la reducción de inventario se ejecutaba antes de aplicar las promociones y garantías. Se reordenó la lógica para mover la reducción de stock al final, previo a la persistencia en el repositorio.
+* **Decisión:** Se aceptó el cambio propuesto para mover `reduceStock` y `updateStock` al paso 7 de la secuencia de ejecución.
+* **Commit relacionado:** `refactor: reorder sale registration process to match integration requirements`

@@ -20,6 +20,7 @@ public class ReturnService {
     private final SaleService saleService;
     private final ProductService productService;
     private final List<Return> returns;
+    private final AccessoryService accessoryService;
 
     /**
      * Creates a new ReturnService with the required dependencies.
@@ -28,10 +29,12 @@ public class ReturnService {
      * @param saleService the service used to resolve and validate sales
      * @param productService the service used to resolve products and restore stock
      */
-    public ReturnService(ReturnRepository repository, SaleService saleService, ProductService productService) {
+    public ReturnService(ReturnRepository repository, SaleService saleService,
+                         ProductService productService, AccessoryService accessoryService) {
         this.repository = repository;
         this.saleService = saleService;
         this.productService = productService;
+        this.accessoryService = accessoryService;
         this.returns = repository.loadAll();
     }
 
@@ -79,7 +82,11 @@ public class ReturnService {
         Return newReturn = new Return(returnId, sale, returnedProducts, reason);
 
         for (String productId : productIds) {
-            productService.restoreStock(productId, 1);
+            if (accessoryService.findById(productId) != null) {
+                accessoryService.restoreStock(productId, 1);
+            } else {
+                productService.restoreStock(productId, 1);
+            }
         }
 
         returns.add(newReturn);

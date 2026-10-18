@@ -126,23 +126,26 @@ public class Sale {
         sb.append("Vendedor: ").append(sellerId).append("\n");
         sb.append("----------------------------\n");
 
-        if (details != null) {
-            for (SaleDetail d : details) {
-                sb.append(String.format("Producto: %s | Cant: %d | Precio: $%.2f | Subtotal: $%.2f\n",
-                        d.getProductId(), d.getQuantity(), d.getUnitPrice(), d.getSubtotal()));
-            }
+        for (SaleDetail detail : details) {
+            sb.append(String.format("Producto: %s | Cantidad: %d | Precio Unitario: $%.2f | Subtotal: $%.2f\n",
+                    detail.getProductId(), detail.getQuantity(), detail.getUnitPrice(), detail.getSubtotal()));
         }
 
         sb.append("----------------------------\n");
         sb.append(String.format("Subtotal: $%.2f\n", getSubtotal()));
+
         if (discountAmount > 0) {
             sb.append(String.format("Promoción Aplicada: %s (-$%.2f)\n", appliedPromotionName, discountAmount));
         } else {
             sb.append("Promoción Aplicada: Ninguna ($0.00)\n");
         }
+
         if (warrantyCost > 0) {
             sb.append(String.format("Garantías Extendidas: +$%.2f\n", warrantyCost));
+        } else {
+            sb.append("Garantías Extendidas: +$0.00\n");
         }
+
         sb.append(String.format("TOTAL FINAL: $%.2f\n", total));
         sb.append("============================\n");
 
