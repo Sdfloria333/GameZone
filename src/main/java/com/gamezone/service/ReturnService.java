@@ -1,5 +1,6 @@
 package com.gamezone.service;
 
+import com.gamezone.model.products.Console;
 import com.gamezone.model.products.Product;
 import com.gamezone.model.returns.Return;
 import com.gamezone.model.sales.Sale;
@@ -21,6 +22,7 @@ public class ReturnService {
     private final ProductService productService;
     private final List<Return> returns;
     private final AccessoryService accessoryService;
+    private final WarrantyService warrantyService;
 
     /**
      * Creates a new ReturnService with the required dependencies.
@@ -28,13 +30,17 @@ public class ReturnService {
      * @param repository the repository used to persist returns
      * @param saleService the service used to resolve and validate sales
      * @param productService the service used to resolve products and restore stock
+     * @param accessoryService the service used to restore accessory stock
+     * @param warrantyService the service used to cancel the warranties of returned consoles
      */
     public ReturnService(ReturnRepository repository, SaleService saleService,
-                         ProductService productService, AccessoryService accessoryService) {
+                         ProductService productService, AccessoryService accessoryService,
+                         WarrantyService warrantyService) {
         this.repository = repository;
         this.saleService = saleService;
         this.productService = productService;
         this.accessoryService = accessoryService;
+        this.warrantyService = warrantyService;
         this.returns = repository.loadAll();
     }
 
@@ -78,8 +84,24 @@ public class ReturnService {
             }
         }
 
+        // Validated here, before any warranty is cancelled, so a failing
+        // Return constructor can never leave warranties cancelled without a return.
+        if (returnedProducts.isEmpty()) {
+            throw new IllegalArgumentException("La devolución debe incluir al menos un producto");
+        }
+        if (reason == null || reason.isBlank()) {
+            throw new IllegalArgumentException("Debe indicar un motivo para la devolución");
+        }
+
+        double warrantyRefund = 0.0;
+        for (Product product : returnedProducts) {
+            if (product instanceof Console) {
+                warrantyRefund += warrantyService.cancelWarranties(product.getId(), saleId);
+            }
+        }
+
         String returnId = "R" + (returns.size() + 1);
-        Return newReturn = new Return(returnId, sale, returnedProducts, reason);
+        Return newReturn = new Return(returnId, sale, returnedProducts, reason, warrantyRefund);
 
         for (String productId : productIds) {
             if (accessoryService.findById(productId) != null) {
