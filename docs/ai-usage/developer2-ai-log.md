@@ -1,7 +1,6 @@
 # AI Usage Log — Developer 2 (Person Module)
 
 ## Tool used
-Claude (Anthropic)
 
 ## 1. Person Module and Base Architecture
 
