@@ -59,6 +59,7 @@ public class ReturnRepository {
         List<String> productIds;
         String reason;
         double refundAmount;
+        double warrantyRefund;
     }
 
     /**
@@ -78,6 +79,7 @@ public class ReturnRepository {
             record.saleId = r.getOriginalSale().getSaleId();
             record.reason = r.getReason();
             record.refundAmount = r.getRefundAmount();
+            record.warrantyRefund = r.getWarrantyRefund();
 
             List<String> ids = new ArrayList<>();
             for (Product product : r.getReturnedProducts()) {
@@ -141,7 +143,7 @@ public class ReturnRepository {
                 }
 
                 Return r = new Return(record.returnId, LocalDate.parse(record.date),
-                        sale, products, record.reason, record.refundAmount);
+                        sale, products, record.reason, record.refundAmount, record.warrantyRefund);
                 returns.add(r);
             }
         } catch (IOException e) {

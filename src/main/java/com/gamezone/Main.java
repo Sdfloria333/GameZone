@@ -24,13 +24,17 @@ public class Main {
                 // 2. SaleService recibe los 4 servicios (incluyendo PromotionService)
                 SaleService saleService = new SaleService(productService, accessoryService, personService,
                         promotionService);
-                // Se agrega el módulo de devoluciones
-                ReturnRepository returnRepository = new ReturnRepository(saleService, productService, accessoryService);
-                ReturnService returnService = new ReturnService(returnRepository, saleService, productService, accessoryService);                // Warranty module: injected into SaleService by setter to avoid a circular
+                // Warranty module: injected into SaleService by setter to avoid a circular
                 // dependency
                 WarrantyRepository warrantyRepository = new WarrantyRepository(saleService, productService);
                 WarrantyService warrantyService = new WarrantyService(warrantyRepository);
                 saleService.setWarrantyService(warrantyService);
+
+                // Returns module: built after the warranty module because returning a
+                // console cancels its warranties
+                ReturnRepository returnRepository = new ReturnRepository(saleService, productService, accessoryService);
+                ReturnService returnService = new ReturnService(returnRepository, saleService, productService,
+                                accessoryService, warrantyService);
 
                 // 3. Inicias la UI con sus referencias correspondientes (incluye devoluciones y
                 // promociones)
