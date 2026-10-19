@@ -9,6 +9,7 @@ import com.gamezone.persistence.WarrantyRepository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -79,6 +80,37 @@ public class WarrantyService {
             }
         }
         return null;
+    }
+
+    /**
+     * Cancels every warranty of the given product within the given sale,
+     * because a returned console cannot keep an active warranty. The
+     * remaining warranties are persisted after the removal.
+     *
+     * @param productId the identifier of the returned product
+     * @param saleId the identifier of the sale the product was returned from
+     * @return the refundable cost: zero for a basic warranty, the additional
+     *         cost for an extended one
+     */
+    public double cancelWarranties(String productId, String saleId) {
+        double refundableCost = 0.0;
+        boolean removedAny = false;
+
+        Iterator<Warranty> iterator = warranties.iterator();
+        while (iterator.hasNext()) {
+            Warranty w = iterator.next();
+            if (w.getProduct().getId().equalsIgnoreCase(productId)
+                    && w.getSale().getSaleId().equalsIgnoreCase(saleId)) {
+                refundableCost += w.getAdditionalCost();
+                iterator.remove();
+                removedAny = true;
+            }
+        }
+
+        if (removedAny) {
+            repository.saveAll(warranties);
+        }
+        return refundableCost;
     }
 
     /**
