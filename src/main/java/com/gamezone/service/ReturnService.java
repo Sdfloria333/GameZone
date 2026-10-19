@@ -146,6 +146,43 @@ public class ReturnService {
     }
 
     /**
+     * Calculates the total amount of sales registered during the given
+     * month and year.
+     *
+     * @param month the month to evaluate (1-12)
+     * @param year the year to evaluate
+     * @return the total sales amount for that period
+     */
+    public double calculateMonthlySales(int month, int year) {
+        double totalSales = 0.0;
+        for (Sale sale : saleService.listSales()) {
+            LocalDate saleDate = sale.getDate();
+            if (saleDate.getMonthValue() == month && saleDate.getYear() == year) {
+                totalSales += sale.getTotal();
+            }
+        }
+        return totalSales;
+    }
+
+    /**
+     * Calculates the total amount refunded through returns during the
+     * given month and year.
+     *
+     * @param month the month to evaluate (1-12)
+     * @param year the year to evaluate
+     * @return the total returns amount for that period
+     */
+    public double calculateMonthlyReturns(int month, int year) {
+        double totalReturns = 0.0;
+        for (Return r : returns) {
+            if (r.getDate().getMonthValue() == month && r.getDate().getYear() == year) {
+                totalReturns += r.getRefundAmount();
+            }
+        }
+        return totalReturns;
+    }
+
+    /**
      * Generates the net balance for the given month and year, calculated
      * as total sales minus total returns during that period.
      *
@@ -154,21 +191,6 @@ public class ReturnService {
      * @return the net balance (sales total minus returns total)
      */
     public double generateMonthlyBalance(int month, int year) {
-        double totalSales = 0.0;
-        for (Sale sale : saleService.listSales()) {
-            LocalDate saleDate = sale.getDate();
-            if (saleDate.getMonthValue() == month && saleDate.getYear() == year) {
-                totalSales += sale.getTotal();
-            }
-        }
-
-        double totalReturns = 0.0;
-        for (Return r : returns) {
-            if (r.getDate().getMonthValue() == month && r.getDate().getYear() == year) {
-                totalReturns += r.getRefundAmount();
-            }
-        }
-
-        return totalSales - totalReturns;
+        return calculateMonthlySales(month, year) - calculateMonthlyReturns(month, year);
     }
 }
