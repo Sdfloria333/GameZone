@@ -1,29 +1,17 @@
 # GameZone Unicesar
 
-Sistema de información para la gestión de una tienda de videojuegos, consolas y
-accesorios: inventario, clientes, vendedores, ventas, promociones, devoluciones
-y garantías.
+Information system for managing a video game, console, and accessory store: inventory, customers, sellers, sales, promotions, returns, and warranties.
 
-Proyecto académico de la asignatura **Programación III** (Universidad Popular
-del Cesar), desarrollado en Java con arquitectura en capas y persistencia en
-archivos JSON.
+Academic project for the **Programming III** course (Universidad Popular del Cesar), developed in Java with a layered architecture and persistence using JSON files.
 
-## Tecnologías
+## Tech Stack
 
 - Java 21+ (Maven, `pom.xml`)
-- [Gson](https://github.com/google/gson) para persistencia JSON
-- Interfaz de consola (`ConsoleUI`)
+- [Gson](https://github.com/google/gson) for JSON persistence
+- Console Interface (`ConsoleUI` / `ConsoleMenu`)
 
-## Cómo ejecutar
+## How to Run
 
 ```bash
 mvn compile
 mvn exec:java -Dexec.mainClass="com.gamezone.Main"
-```
-
-O ejecuta `Main.java` directamente desde tu IDE.
-
-## Arquitectura
-
-El proyecto sigue una arquitectura en cuatro capas, con dependencias en un
-único sentido: `ui → service → persistence → model`.

@@ -27,8 +27,8 @@ public class ConsoleUI {
 
     // Constructor actualizado: inyecta ReturnService y PromotionService
     public ConsoleUI(ProductService productService, PersonService personService, SaleService saleService,
-            AccessoryService accessoryService, ReturnService returnService, PromotionService promotionService,
-            WarrantyService warrantyService) {
+                     AccessoryService accessoryService, ReturnService returnService, PromotionService promotionService,
+                     WarrantyService warrantyService) {
         this.productService = productService;
         this.personService = personService;
         this.saleService = saleService;
@@ -183,7 +183,7 @@ public class ConsoleUI {
             LocalDate end = LocalDate.parse(scanner.nextLine());
             System.out.print("Porcentaje (%): ");
             double pct = Double.parseDouble(scanner.nextLine());
-            System.out.print("Categoría (VIDEOGAME, CONSOLE, CONTROLLER, CABLE, MEMORY): ");
+            System.out.print("Categoría (VIDEOGAME, CONSOLE, ACCESSORY): ");
             String category = scanner.nextLine().toUpperCase();
 
             if (promotionService.registerCategoryDiscount(id, name, start, end, pct, category)) {
@@ -393,10 +393,20 @@ public class ConsoleUI {
                 String category = "";
                 boolean found = false;
 
+                // Checked here first because ProductService.findProductById() already
+                // includes accessories in its search (Accessory extends Product), so an
+                // accessory's specific sub-category must be identified before falling back
+                // to the generic Videogame/Console checks.
                 Product product = productService.findProductById(itemId);
                 if (product != null) {
                     price = product.getPrice();
-                    if (product instanceof Videogame) {
+                    if (product instanceof Controller) {
+                        category = "CONTROLLER";
+                    } else if (product instanceof Cable) {
+                        category = "CABLE";
+                    } else if (product instanceof Memory) {
+                        category = "MEMORY";
+                    } else if (product instanceof Videogame) {
                         category = "VIDEOGAME";
                     } else if (product instanceof Console) {
                         category = "CONSOLE";
@@ -405,6 +415,7 @@ public class ConsoleUI {
                     }
                     found = true;
                 } else {
+                    // Fallback kept for safety; ProductService already covers accessories above.
                     Accessory accessory = accessoryService.findById(itemId);
                     if (accessory != null) {
                         price = accessory.getPrice();
@@ -657,7 +668,12 @@ public class ConsoleUI {
             System.out.print("Año: ");
             int year = Integer.parseInt(scanner.nextLine());
 
+            double totalSales = returnService.calculateMonthlySales(month, year);
+            double totalReturns = returnService.calculateMonthlyReturns(month, year);
             double balance = returnService.generateMonthlyBalance(month, year);
+
+            System.out.println("Total de ventas para " + month + "/" + year + ": $" + totalSales);
+            System.out.println("Total de devoluciones para " + month + "/" + year + ": $" + totalReturns);
             System.out.println("Balance neto para " + month + "/" + year + ": $" + balance);
         } catch (NumberFormatException e) {
             System.out.println("Error: Mes y Año deben ser valores numericos.");

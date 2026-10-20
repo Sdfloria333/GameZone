@@ -18,6 +18,7 @@ public class Return {
     private List<Product> returnedProducts;
     private String reason;
     private double refundAmount;
+    private double warrantyRefund;
 
     /**
      * Creates a new return for the given sale and products.
@@ -26,8 +27,11 @@ public class Return {
      * @param originalSale the sale this return refers to
      * @param returnedProducts the products being returned
      * @param reason the reason for the return
+     * @param warrantyRefund the amount refunded for the cancelled warranties
+     *                       of the returned consoles
      */
-    public Return(String returnId, Sale originalSale, List<Product> returnedProducts, String reason) {
+    public Return(String returnId, Sale originalSale, List<Product> returnedProducts, String reason,
+                  double warrantyRefund) {
         if (returnId == null || returnId.isBlank()) {
             throw new IllegalArgumentException("El identificador de la devolución no puede estar vacío");
         }
@@ -46,6 +50,7 @@ public class Return {
         this.originalSale = originalSale;
         this.returnedProducts = returnedProducts;
         this.reason = reason;
+        this.warrantyRefund = warrantyRefund;
         this.refundAmount = calculateRefundAmount();
     }
 
@@ -59,15 +64,19 @@ public class Return {
      * @param returnedProducts the products that were returned
      * @param reason the reason for the return
      * @param refundAmount the previously calculated refund amount
+     * @param warrantyRefund the previously calculated warranty refund included
+     *                       in the refund amount
      */
     public Return(String returnId, LocalDate date, Sale originalSale,
-                  List<Product> returnedProducts, String reason, double refundAmount) {
+                  List<Product> returnedProducts, String reason, double refundAmount,
+                  double warrantyRefund) {
         this.returnId = returnId;
         this.date = date;
         this.originalSale = originalSale;
         this.returnedProducts = returnedProducts;
         this.reason = reason;
         this.refundAmount = refundAmount;
+        this.warrantyRefund = warrantyRefund;
     }
 
     public String getReturnId() {
@@ -94,24 +103,51 @@ public class Return {
         return refundAmount;
     }
 
+    public double getWarrantyRefund() {
+        return warrantyRefund;
+    }
+
     /**
-     * Calculates the refund amount by summing the prices of the returned products,
-     * and updates the refundAmount attribute.
+     * Calculates the refund amount by summing, for each returned product, its
+     * list price reduced by the same discount ratio the original sale had
+     * (discountAmount / subtotal). This keeps the refund proportional to what
+     * the customer actually paid: if the original sale carried a promotion,
+     * returning an item refunds its price minus its proportional share of
+     * that discount, never the full list price. The refundable cost of the
+     * cancelled warranties is added on top of the products' refund. Updates
+     * the refundAmount attribute.
      *
      * @return the calculated refund amount
      */
     public double calculateRefundAmount() {
         double total = 0.0;
+        double discountRatio = getDiscountRatio();
+
         for (Product product : returnedProducts) {
-            total += product.getPrice();
+            total += product.getPrice() * (1 - discountRatio);
         }
+        total += warrantyRefund;
         this.refundAmount = total;
         return total;
     }
 
     /**
+     * Computes the fraction of the original sale's subtotal that its
+     * promotion discounted (0.0 if the sale had no discount or no subtotal).
+     *
+     * @return the discount ratio, between 0.0 and 1.0
+     */
+    private double getDiscountRatio() {
+        double subtotal = originalSale.getSubtotal();
+        double discountAmount = originalSale.getDiscountAmount();
+        return (subtotal > 0) ? (discountAmount / subtotal) : 0.0;
+    }
+
+    /**
      * Generates a formatted receipt describing this return, in Spanish
-     * since it is displayed directly to the user.
+     * since it is displayed directly to the user. For each returned product
+     * it shows the list price, the proportional discount carried over from
+     * the original sale's promotion, and the amount actually refunded.
      *
      * @return a formatted return receipt
      */
@@ -121,13 +157,21 @@ public class Return {
                 .append(" | Fecha: ").append(date)
                 .append(" | Venta original: ").append(originalSale.getSaleId())
                 .append(" | Motivo: ").append(reason)
-                .append(" | Productos devueltos: ");
+                .append("\nProductos devueltos:\n");
+
+        double discountRatio = getDiscountRatio();
 
         for (Product product : returnedProducts) {
-            sb.append(product.getTitle()).append(" ($").append(product.getPrice()).append(") ");
+            double listPrice = product.getPrice();
+            double itemDiscount = listPrice * discountRatio;
+            double itemRefund = listPrice - itemDiscount;
+            sb.append(String.format(
+                    "  - %s | Precio de lista: $%.2f | Descuento proporcional: -$%.2f | Reembolsado: $%.2f%n",
+                    product.getTitle(), listPrice, itemDiscount, itemRefund));
         }
 
-        sb.append("| Monto reembolsado: $").append(refundAmount);
+        sb.append(String.format("Reembolso por garantías anuladas: $%.2f%n", warrantyRefund));
+        sb.append(String.format("Monto total reembolsado: $%.2f", refundAmount));
         return sb.toString();
     }
 }

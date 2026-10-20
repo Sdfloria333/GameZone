@@ -1,12 +1,7 @@
 package com.gamezone.persistence;
 
-import com.gamezone.model.products.Product;
-import com.gamezone.model.sales.Sale;
 import com.gamezone.model.warranties.BasicWarranty;
-import com.gamezone.model.warranties.ExtendedWarranty;
 import com.gamezone.model.warranties.Warranty;
-import com.gamezone.service.ProductService;
-import com.gamezone.service.SaleService;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
@@ -16,70 +11,85 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Manages the persistence of warranties using a JSON file, storing
- * only sale and product identifiers, and resolving them into full
- * objects when loading using the injected services.
+ * Manages the persistence of warranties using a JSON file. Only the
+ * sale and product identifiers are stored, so this class has no
+ * dependency on any service.
  */
 public class WarrantyRepository {
 
     private static final String WARRANTIES_FILE = "src/main/data/warranties.json";
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    private final SaleService saleService;
-    private final ProductService productService;
-
     /**
-     * Creates a new WarrantyRepository with the services needed to
-     * resolve Sale and Product references when loading warranties.
-     *
-     * @param saleService the service used to resolve original sales
-     * @param productService the service used to resolve covered products
+     * Lightweight representation of a persisted warranty. It holds
+     * identifiers only; resolving them into objects is the service's job.
      */
-    public WarrantyRepository(SaleService saleService, ProductService productService) {
-        this.saleService = saleService;
-        this.productService = productService;
+    public static class WarrantyRecord {
+        private String warrantyId;
+        private String type;
+        private String productId;
+        private String saleId;
+        private String startDate;
+
+        /**
+         * Creates a warranty record.
+         *
+         * @param warrantyId the warranty identifier
+         * @param type "BASIC" or "EXTENDED"
+         * @param productId the identifier of the covered product
+         * @param saleId the identifier of the original sale
+         * @param startDate the start date in ISO format (yyyy-MM-dd)
+         */
+        public WarrantyRecord(String warrantyId, String type, String productId,
+                              String saleId, String startDate) {
+            this.warrantyId = warrantyId;
+            this.type = type;
+            this.productId = productId;
+            this.saleId = saleId;
+            this.startDate = startDate;
+        }
+
+        /** @return the warranty identifier */
+        public String getWarrantyId() { return warrantyId; }
+
+        /** @return the warranty type ("BASIC" or "EXTENDED") */
+        public String getType() { return type; }
+
+        /** @return the covered product identifier */
+        public String getProductId() { return productId; }
+
+        /** @return the original sale identifier */
+        public String getSaleId() { return saleId; }
+
+        /** @return the start date in ISO format */
+        public String getStartDate() { return startDate; }
     }
 
     /**
-     * Lightweight internal representation used for JSON persistence.
-     */
-    private static class WarrantyRecord {
-        String warrantyId;
-        String type;
-        String productId;
-        String saleId;
-        String startDate;
-    }
-
-    /**
-     * Saves all warranties to the JSON file.
+     * Saves all warranties to the JSON file, storing only identifiers.
      *
      * @param warranties the list of warranties to save
      * @return true if the save was successful
      */
     public boolean saveAll(List<Warranty> warranties) {
         List<WarrantyRecord> records = new ArrayList<>();
-
         for (Warranty w : warranties) {
-            WarrantyRecord record = new WarrantyRecord();
-            record.warrantyId = w.getWarrantyId();
-            record.type = (w instanceof BasicWarranty) ? "BASIC" : "EXTENDED";
-            record.productId = w.getProduct().getId();
-            record.saleId = w.getSale().getSaleId();
-            record.startDate = w.getStartDate().toString();
-            records.add(record);
+            records.add(new WarrantyRecord(
+                    w.getWarrantyId(),
+                    (w instanceof BasicWarranty) ? "BASIC" : "EXTENDED",
+                    w.getProduct().getId(),
+                    w.getSale().getSaleId(),
+                    w.getStartDate().toString()));
         }
 
         File file = new File(WARRANTIES_FILE);
         if (file.getParentFile() != null) {
             file.getParentFile().mkdirs();
         }
-
         try (FileWriter writer = new FileWriter(file)) {
             gson.toJson(records, writer);
             return true;
@@ -89,47 +99,21 @@ public class WarrantyRepository {
     }
 
     /**
-     * Loads all warranties from the JSON file, resolving each sale and
-     * product reference and reconstructing the correct concrete subtype.
+     * Loads the persisted warranty records without resolving any reference.
      *
-     * @return the list of warranties, or an empty list if the file does not exist
+     * @return the list of records, or an empty list if the file does not exist
      */
-    public List<Warranty> loadAll() {
-        List<Warranty> warranties = new ArrayList<>();
+    public List<WarrantyRecord> loadAll() {
         File file = new File(WARRANTIES_FILE);
-
         if (!file.exists()) {
-            return warranties;
+            return new ArrayList<>();
         }
-
         try (FileReader reader = new FileReader(file)) {
             Type listType = new TypeToken<ArrayList<WarrantyRecord>>() {}.getType();
             List<WarrantyRecord> records = gson.fromJson(reader, listType);
-
-            if (records == null) {
-                return warranties;
-            }
-
-            for (WarrantyRecord record : records) {
-                Product product = productService.findProductById(record.productId);
-                Sale sale = saleService.findSaleById(record.saleId);
-
-                if (product == null || sale == null) {
-                    continue;
-                }
-
-                LocalDate startDate = LocalDate.parse(record.startDate);
-
-                if ("BASIC".equals(record.type)) {
-                    warranties.add(new BasicWarranty(record.warrantyId, product, sale, startDate));
-                } else if ("EXTENDED".equals(record.type)) {
-                    warranties.add(new ExtendedWarranty(record.warrantyId, product, sale, startDate));
-                }
-            }
+            return records != null ? records : new ArrayList<>();
         } catch (IOException e) {
             return new ArrayList<>();
         }
-
-        return warranties;
     }
 }
