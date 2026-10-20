@@ -24,12 +24,8 @@ public class SaleService {
 
     // UPDATED CONSTRUCTOR: injects PromotionService
     public SaleService(ProductService productService, AccessoryService accessoryService,
-<<<<<<< HEAD
                        PersonService personService, PromotionService promotionService,
                        WarrantyService warrantyService) {
-=======
-                       PersonService personService, PromotionService promotionService) {
->>>>>>> origin/develop
         this.repository = new SaleRepository();
         this.productService = productService;
         this.accessoryService = accessoryService;

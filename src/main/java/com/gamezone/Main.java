@@ -22,30 +22,14 @@ public class Main {
                 AccessoryService accessoryService = new AccessoryService();
                 ProductService productService = new ProductService(accessoryService);
                 PersonService personService = new PersonService();
-<<<<<<< HEAD
-
-// Warranty module: built before SaleService because it no longer depends on it
+                // Warranty module: built before SaleService because it no longer depends on it
                 SaleRepository saleRepository = new SaleRepository();
                 WarrantyRepository warrantyRepository = new WarrantyRepository();
                 WarrantyService warrantyService = new WarrantyService(warrantyRepository, saleRepository, productService);
 
-// SaleService receives WarrantyService through its constructor
+                // SaleService receives WarrantyService through its constructor
                 SaleService saleService = new SaleService(productService, accessoryService,
                         personService, promotionService, warrantyService);
-
-// Returns module: now also needs AccessoryService (added by A4)
-                ReturnRepository returnRepository = new ReturnRepository(saleService, productService, accessoryService);
-                ReturnService returnService = new ReturnService(returnRepository, saleService, productService, accessoryService);
-=======
-                // 2. SaleService recibe los 4 servicios (incluyendo PromotionService)
-                SaleService saleService = new SaleService(productService, accessoryService, personService,
-                        promotionService);
-                // Warranty module: injected into SaleService by setter to avoid a circular
-                // dependency
-                WarrantyRepository warrantyRepository = new WarrantyRepository(saleService, productService);
-                WarrantyService warrantyService = new WarrantyService(warrantyRepository);
-                saleService.setWarrantyService(warrantyService);
->>>>>>> origin/develop
 
                 // Returns module: built after the warranty module because returning a
                 // console cancels its warranties
