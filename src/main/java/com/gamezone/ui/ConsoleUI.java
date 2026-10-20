@@ -668,7 +668,12 @@ public class ConsoleUI {
             System.out.print("Año: ");
             int year = Integer.parseInt(scanner.nextLine());
 
+            double totalSales = returnService.calculateMonthlySales(month, year);
+            double totalReturns = returnService.calculateMonthlyReturns(month, year);
             double balance = returnService.generateMonthlyBalance(month, year);
+
+            System.out.println("Total de ventas para " + month + "/" + year + ": $" + totalSales);
+            System.out.println("Total de devoluciones para " + month + "/" + year + ": $" + totalReturns);
             System.out.println("Balance neto para " + month + "/" + year + ": $" + balance);
         } catch (NumberFormatException e) {
             System.out.println("Error: Mes y Año deben ser valores numericos.");
