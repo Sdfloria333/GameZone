@@ -1,7 +1,7 @@
 # AI Usage Log — Developer 2 (Person Module)
 
-## Tool used
-
+## Tool Used
+Claude
 ## 1. Person Module and Base Architecture
 
 ### Assistance received from the AI
