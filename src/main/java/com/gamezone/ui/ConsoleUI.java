@@ -40,7 +40,7 @@ public class ConsoleUI {
     }
 
     public void start() {
-        int option = -1;
+        int option = -1 ;
         while (option != 0) {
             printMenu();
             try {
