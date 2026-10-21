@@ -3,6 +3,8 @@ package com.gamezone.service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.InvalidDataException;
 import com.gamezone.model.accessories.Accessory;
 import com.gamezone.model.products.Console;
 import com.gamezone.model.products.Product;
@@ -11,6 +13,8 @@ import com.gamezone.model.sales.Sale;
 import com.gamezone.model.sales.SaleDetail;
 import com.gamezone.model.warranties.ExtendedWarranty;
 import com.gamezone.persistence.SaleRepository;
+import com.gamezone.validation.PersonValidator;
+import com.gamezone.validation.ProductValidator;
 
 public class SaleService {
 
@@ -41,34 +45,30 @@ public class SaleService {
 
     public boolean registerSale(String saleId, String customerId, String sellerId, List<SaleDetail> details,
                                 List<String> productIdsWithExtendedWarranty) {
-        if (saleId == null || saleId.isBlank() || details == null || details.isEmpty()) {
-            return false;
+        if (saleId == null || saleId.isBlank()) {
+            throw new InvalidDataException("identificador de la venta", "no puede estar vacío");
+        }
+        if (details == null || details.isEmpty()) {
+            throw new BusinessRuleException("La venta debe incluir al menos un producto");
         }
 
         // 1. Validate that the sale does not already exist by ID
         for (Sale s : sales) {
             if (s.getId().equalsIgnoreCase(saleId)) {
-                return false;
+                throw new BusinessRuleException("Ya existe una venta con el identificador " + saleId);
             }
         }
 
         // 2. Validate that the customer and the seller exist
-        if (personService.findCustomerByIdentification(customerId) == null) {
-            return false;
-        }
-
-        if (personService.findSellerByIdentification(sellerId) == null) {
-            return false;
-        }
+        PersonValidator.validatePersonExists(personService.findCustomerByIdentification(customerId), customerId);
+        PersonValidator.validatePersonExists(personService.findSellerByIdentification(sellerId), sellerId);
 
         // 3. Validate stock in a unified way (Products or Accessories)
+        // findProductById() also resolves accessories, so one lookup covers both
         for (SaleDetail detail : details) {
-            boolean hasProductStock = productService.hasEnoughStock(detail.getProductId(), detail.getQuantity());
-            boolean hasAccessoryStock = accessoryService.hasEnoughStock(detail.getProductId(), detail.getQuantity());
-
-            if (!hasProductStock && !hasAccessoryStock) {
-                return false; // Cancels the sale if there is not enough stock
-            }
+            Product product = productService.findProductById(detail.getProductId());
+            ProductValidator.validateProductExists(product, detail.getProductId());
+            ProductValidator.validateStockAvailability(product, detail.getQuantity());
         }
 
         // 4. Create the initial sale
