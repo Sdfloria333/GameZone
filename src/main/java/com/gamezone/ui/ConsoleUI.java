@@ -61,6 +61,8 @@ public class ConsoleUI {
             } catch (PersistenceException e) {
                 System.out
                         .println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
+            } catch (Exception e) {
+                System.out.println("Ocurrió un error inesperado. Contacte al administrador.");
             }
         }
     }
@@ -626,8 +628,6 @@ public class ConsoleUI {
 
         } catch (IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
-        } catch (Exception e) {
-            System.out.println("Error en los datos ingresados: " + e.getMessage());
         }
     }
 
