@@ -566,7 +566,7 @@ public class ConsoleUI {
             } else {
                 System.out.println("Error al registrar accesorio.");
             }
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             System.out.println("Error en el formato de datos ingresados.");
         }
     }
