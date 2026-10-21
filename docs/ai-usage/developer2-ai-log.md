@@ -1,8 +1,7 @@
 # AI Usage Log — Developer 2 (Person Module)
 
-## Tool used
-Claude (Anthropic)
-
+## Tool Used
+Claude
 ## 1. Person Module and Base Architecture
 
 ### Assistance received from the AI
@@ -51,3 +50,52 @@ Claude (Anthropic)
 - Modified `ReturnRepository` to query `AccessoryService` first when loading returns.
 - Maintained delegation to `ProductService.restoreStock` as a safeguard for direct calls.
 - Preserved the existing business rule (a fixed restoration of 1 unit per return).
+
+## 4. Adjustment A6 — Monthly Balance Report
+
+### Assistance received from the AI
+- Theoretical explanation of how breaking down `generateMonthlyBalance` into smaller methods improves cohesion and facilitates the reuse of individual calculations.
+- Conceptual guidance on structuring business logic and presenting data within the user interface layer.
+- Guidance on Git version control: procedures for renaming a branch according to the required convention (`fix/monthly-balance-report`) and deleting the previous remote branch.
+
+### Technical decisions made by the developer
+- Extraction of the methods `calculateMonthlySales(int month, int year)` and `calculateMonthlyReturns(int month, int year)` within `ReturnService`.
+- Retention of the original signature for `generateMonthlyBalance`, ensuring it returns the calculated difference between the two amounts.
+- Definition of total sales criteria based on the final amount of each transaction (including discounts and extended warranties).
+- Update to `ConsoleUI.viewMonthlyBalance` to clearly display total sales, total returns, and the net balance.
+
+### Verification performed
+- Generation of a monthly balance report for a period containing both sales and return transactions, confirming that the value of sales minus returns matches the net balance exactly.
+- Successful project compilation with no errors.
+
+## 5. Adjustment A7 — Warranty Cancellation for Console Returns
+
+### Assistance received from the AI
+- Conceptual explanation of business rules regarding returns: why a returned console should not retain an active warranty, and why only the cost of an extended warranty is eligible for a refund.
+- Guidance on resolving merge conflicts within `Main.java`, including instructions on how to properly handle conflict markers before committing changes.
+
+### Technical decisions made by the developer
+- Implementation of `WarrantyService.cancelWarranties(productId, saleId)` to remove warranties associated with a product within a specific sale, returning the refundable cost (zero for basic warranties and the corresponding additional cost for extended warranties).
+- Configuration of `ReturnService.registerReturn` to trigger the cancellation for each returned console and propagate the result to the `Return` entity.
+- Incorporation of preliminary product and reason validations prior to warranty cancellation, ensuring that a failure during the return process does not improperly alter the status of the warranties.
+- Update to the `Return` entity to include the warranty refund in the total amount to be returned, reflecting this on the receipt and ensuring its persistence via `ReturnRepository`.
+- Injection of `WarrantyService` through the `ReturnService` constructor, with an adjustment to the instantiation order in `Main` to ensure the warranty module is initialized before the returns module.
+
+## 6. Requirement 6 — Exceptions and Validation in Services and Repositories
+
+### Assistance received from the AI
+- Review of the exception classes and validators delivered by Developer 1 to align the service changes with their exact signatures.
+- Draft of the service and repository refactoring, which the developer reviewed before committing.
+- Explanation of why a failed write should throw instead of returning `false`, and of the risk of treating an unreadable file as an empty list.
+- Guidance on Git: creating `feature/exception-services` from the updated `develop` and keeping atomic commits.
+
+### Technical decisions made by the developer
+- `ProductRepository`, `PersonRepository` and `SaleRepository` throw `PersistenceException` with the file path and the operation, preserving the original cause.
+- Services call the validators first and pass them any data they need, so validators never access persistence.
+- `findProductById` and the other query methods keep returning `null`; only operations that cannot continue throw.
+- `registerSale` keeps its existing pipeline and now throws `InvalidDataException`, `BusinessRuleException` or `ResourceNotFoundException` instead of returning `false`.
+- Differences with the previous behaviour (price 0, required email and phone, duplicate identifications) are documented in `docs/exception-analysis.md`.
+
+### Verification performed
+- Successful compilation of the whole project.
+- A test harness exercised duplicate customer, invalid email, duplicate product, negative price, duplicate sale, unknown customer, unknown product, insufficient stock and empty sale, and each case threw the expected exception type.
