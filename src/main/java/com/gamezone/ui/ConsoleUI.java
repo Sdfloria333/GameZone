@@ -478,8 +478,8 @@ public class ConsoleUI {
                 System.out.println("Error al procesar la venta. Verifique cliente, vendedor o stock disponible.");
             }
 
-        } catch (Exception e) {
-            System.out.println("Error en los datos ingresados: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: La cantidad debe ser un valor numérico.");
         }
     }
 
