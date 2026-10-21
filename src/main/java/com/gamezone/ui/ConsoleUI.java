@@ -1,6 +1,10 @@
 package com.gamezone.ui;
 
 import com.gamezone.model.promotions.*;
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.InvalidDataException;
+import com.gamezone.exceptions.PersistenceException;
+import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.accessories.*;
 import com.gamezone.model.persons.*;
 import com.gamezone.model.products.*;
@@ -27,8 +31,8 @@ public class ConsoleUI {
 
     // Constructor actualizado: inyecta ReturnService y PromotionService
     public ConsoleUI(ProductService productService, PersonService personService, SaleService saleService,
-                     AccessoryService accessoryService, ReturnService returnService, PromotionService promotionService,
-                     WarrantyService warrantyService) {
+            AccessoryService accessoryService, ReturnService returnService, PromotionService promotionService,
+            WarrantyService warrantyService) {
         this.productService = productService;
         this.personService = personService;
         this.saleService = saleService;
@@ -40,14 +44,25 @@ public class ConsoleUI {
     }
 
     public void start() {
-        int option = -1 ;
+        int option = -1;
         while (option != 0) {
             printMenu();
             try {
                 option = Integer.parseInt(scanner.nextLine());
                 executeOption(option);
             } catch (NumberFormatException e) {
-                System.out.println("Error: Ingrese un número válido.");
+                System.out.println("Error: Ingrese un número válido porfavor.");
+            } catch (ResourceNotFoundException e) {
+                System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
+            } catch (BusinessRuleException e) {
+                System.out.println("No se puede completar la operación: " + e.getMessage());
+            } catch (InvalidDataException e) {
+                System.out.println("Los datos ingresados no son válidos: " + e.getMessage());
+            } catch (PersistenceException e) {
+                System.out
+                        .println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
+            } catch (Exception e) {
+                System.out.println("Ocurrió un error inesperado. Contacte al administrador.");
             }
         }
     }
@@ -140,8 +155,8 @@ public class ConsoleUI {
                     case 6 -> back = true;
                     default -> System.out.println("Opción no válida.");
                 }
-            } catch (Exception e) {
-                System.out.println("Error en la entrada: " + e.getMessage());
+            } catch (NumberFormatException e) {
+                System.out.println("Error: Ingrese un número válido.");
             }
         }
     }
@@ -465,8 +480,8 @@ public class ConsoleUI {
                 System.out.println("Error al procesar la venta. Verifique cliente, vendedor o stock disponible.");
             }
 
-        } catch (Exception e) {
-            System.out.println("Error en los datos ingresados: " + e.getMessage());
+        } catch (NumberFormatException e) {
+            System.out.println("Error: La cantidad debe ser un valor numérico.");
         }
     }
 
@@ -553,7 +568,7 @@ public class ConsoleUI {
             } else {
                 System.out.println("Error al registrar accesorio.");
             }
-        } catch (Exception e) {
+        } catch (IllegalArgumentException e) {
             System.out.println("Error en el formato de datos ingresados.");
         }
     }
@@ -613,8 +628,6 @@ public class ConsoleUI {
 
         } catch (IllegalArgumentException e) {
             System.out.println("Error: " + e.getMessage());
-        } catch (Exception e) {
-            System.out.println("Error en los datos ingresados: " + e.getMessage());
         }
     }
 
