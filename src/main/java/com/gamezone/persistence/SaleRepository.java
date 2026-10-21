@@ -1,10 +1,8 @@
 package com.gamezone.persistence;
 
 import com.gamezone.model.sales.Sale;
-import com.gamezone.exceptions.PersistenceException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParseException;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializer;
@@ -58,7 +56,7 @@ public class SaleRepository {
             gson.toJson(data, writer);
             return true;
         } catch (IOException e) {
-            throw new PersistenceException("Error al escribir el archivo " + path, e);
+            return false;
         }
     }
 
@@ -70,8 +68,8 @@ public class SaleRepository {
         try (FileReader reader = new FileReader(file)) {
             List<T> data = gson.fromJson(reader, listType);
             return data != null ? data : new ArrayList<>();
-        } catch (IOException | JsonParseException e) {
-            throw new PersistenceException("Error al leer el archivo " + path, e);
+        } catch (IOException e) {
+            return new ArrayList<>();
         }
     }
 }

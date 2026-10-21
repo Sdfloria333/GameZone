@@ -2,10 +2,8 @@ package com.gamezone.persistence;
 
 import com.gamezone.model.persons.Customer;
 import com.gamezone.model.persons.Seller;
-import com.gamezone.exceptions.PersistenceException;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParseException;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.File;
@@ -51,7 +49,7 @@ public class PersonRepository {
             gson.toJson(data, writer);
             return true;
         } catch (IOException e) {
-            throw new PersistenceException("Error al escribir el archivo " + path, e);
+            return false;
         }
     }
 
@@ -63,8 +61,8 @@ public class PersonRepository {
         try (FileReader reader = new FileReader(file)) {
             List<T> data = gson.fromJson(reader, listType);
             return data != null ? data : new ArrayList<>();
-        } catch (IOException | JsonParseException e) {
-            throw new PersistenceException("Error al leer el archivo " + path, e);
+        } catch (IOException e) {
+            return new ArrayList<>();
         }
     }
 }
