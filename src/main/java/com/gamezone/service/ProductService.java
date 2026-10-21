@@ -1,10 +1,13 @@
 package com.gamezone.service;
 
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.InvalidDataException;
 import com.gamezone.model.accessories.Accessory;
 import com.gamezone.model.products.Console;
 import com.gamezone.model.products.Product;
 import com.gamezone.model.products.Videogame;
 import com.gamezone.persistence.ProductRepository;
+import com.gamezone.validation.ProductValidator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,22 +27,26 @@ public class ProductService {
     }
 
     public boolean registerConsole(Console console) {
-        if (console == null || console.getId() == null || console.getId().isBlank() || console.getPrice() < 0) {
-            return false;
+        if (console == null) {
+            throw new InvalidDataException("producto", "no puede ser nulo");
         }
+        ProductValidator.validateProductData(console.getId(), console.getTitle(), console.getPrice(),
+                console.getStockQuantity());
         if (findProductById(console.getId()) != null) {
-            return false;
+            throw new BusinessRuleException("Ya existe un producto con el identificador " + console.getId());
         }
         consoles.add(console);
         return repository.saveConsoles(consoles);
     }
 
     public boolean registerVideogame(Videogame videogame) {
-        if (videogame == null || videogame.getId() == null || videogame.getId().isBlank() || videogame.getPrice() < 0) {
-            return false;
+        if (videogame == null) {
+            throw new InvalidDataException("producto", "no puede ser nulo");
         }
+        ProductValidator.validateProductData(videogame.getId(), videogame.getTitle(), videogame.getPrice(),
+                videogame.getStockQuantity());
         if (findProductById(videogame.getId()) != null) {
-            return false;
+            throw new BusinessRuleException("Ya existe un producto con el identificador " + videogame.getId());
         }
         videogames.add(videogame);
         return repository.saveVideogames(videogames);
@@ -87,9 +94,8 @@ public class ProductService {
 
     public boolean reduceStock(String productId, int quantity) {
         Product product = findProductById(productId);
-        if (product == null || product.getStockQuantity() < quantity) {
-            return false;
-        }
+        ProductValidator.validateProductExists(product, productId);
+        ProductValidator.validateStockAvailability(product, quantity);
 
         product.setStockQuantity(product.getStockQuantity() - quantity);
 
