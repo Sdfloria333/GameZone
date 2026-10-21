@@ -80,3 +80,22 @@ Claude
 - Incorporation of preliminary product and reason validations prior to warranty cancellation, ensuring that a failure during the return process does not improperly alter the status of the warranties.
 - Update to the `Return` entity to include the warranty refund in the total amount to be returned, reflecting this on the receipt and ensuring its persistence via `ReturnRepository`.
 - Injection of `WarrantyService` through the `ReturnService` constructor, with an adjustment to the instantiation order in `Main` to ensure the warranty module is initialized before the returns module.
+
+## 6. Requirement 6 — Exceptions and Validation in Services and Repositories
+
+### Assistance received from the AI
+- Review of the exception classes and validators delivered by Developer 1 to align the service changes with their exact signatures.
+- Draft of the service and repository refactoring, which the developer reviewed before committing.
+- Explanation of why a failed write should throw instead of returning `false`, and of the risk of treating an unreadable file as an empty list.
+- Guidance on Git: creating `feature/exception-services` from the updated `develop` and keeping atomic commits.
+
+### Technical decisions made by the developer
+- `ProductRepository`, `PersonRepository` and `SaleRepository` throw `PersistenceException` with the file path and the operation, preserving the original cause.
+- Services call the validators first and pass them any data they need, so validators never access persistence.
+- `findProductById` and the other query methods keep returning `null`; only operations that cannot continue throw.
+- `registerSale` keeps its existing pipeline and now throws `InvalidDataException`, `BusinessRuleException` or `ResourceNotFoundException` instead of returning `false`.
+- Differences with the previous behaviour (price 0, required email and phone, duplicate identifications) are documented in `docs/exception-analysis.md`.
+
+### Verification performed
+- Successful compilation of the whole project.
+- A test harness exercised duplicate customer, invalid email, duplicate product, negative price, duplicate sale, unknown customer, unknown product, insufficient stock and empty sale, and each case threw the expected exception type.
