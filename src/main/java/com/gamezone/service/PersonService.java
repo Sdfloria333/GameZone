@@ -1,9 +1,12 @@
 package com.gamezone.service;
 
 import com.gamezone.model.persons.Customer;
+import com.gamezone.model.persons.Person;
 import com.gamezone.model.persons.Seller;
 import com.gamezone.persistence.PersonRepository;
+import com.gamezone.validation.PersonValidator;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PersonService {
@@ -30,9 +33,11 @@ public class PersonService {
     }
 
     public boolean registerCustomer(String name, String identification, String phone, String email) {
-        if (name == null || name.isBlank() || identification == null || identification.isBlank()) {
-            return false;
-        }
+        PersonValidator.validatePersonData(identification, name, email, phone);
+        // The service fetches the existing people; the validator never touches persistence
+        List<Person> existing = new ArrayList<>(customers);
+        existing.addAll(sellers);
+        PersonValidator.validateUniquePerson(existing, identification);
         Customer customer = new Customer(name, identification, phone, email);
         customers.add(customer);
         return repository.saveCustomers(customers);
