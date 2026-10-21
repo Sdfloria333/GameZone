@@ -81,3 +81,43 @@ everything, but it would defeat the whole purpose of the requirement: we'd be ba
 to one generic message for every kind of error. Multiple specific `catch` blocks are
 what let us show a distinct, meaningful message for each category, which is exactly
 what the requirement asks for.
+
+## Services and repositories (Developer 2)
+
+This section records how the service and persistence layers use the exception hierarchy
+for the person, product and sale modules.
+
+### Repositories
+
+`ProductRepository`, `PersonRepository` and `SaleRepository` no longer hide I/O problems.
+Before, a failed write returned `false` and a failed read returned an empty list, so a
+corrupted or unreadable file looked like "no data" and the next save could overwrite it.
+Now both operations throw `PersistenceException` with the file path and the operation
+("Error al leer el archivo ..." / "Error al escribir el archivo ...") and keep the original
+cause. Malformed JSON (`JsonParseException`) is treated as a read error as well.
+
+### Services
+
+| Service method | Condition | Exception |
+|---|---|---|
+| `ProductService.registerConsole/Videogame` | null product, blank id or title, price <= 0, negative stock | `InvalidDataException` (via `ProductValidator`) |
+| | id already registered | `BusinessRuleException` |
+| `ProductService.reduceStock` | unknown product / insufficient stock | `ResourceNotFoundException` / `BusinessRuleException` |
+| `PersonService.registerCustomer` | blank id, name or phone, malformed email | `InvalidDataException` (via `PersonValidator`) |
+| | identification already used by a customer or seller | `BusinessRuleException` |
+| `SaleService.registerSale` | blank sale id | `InvalidDataException` |
+| | no products, duplicate sale id, insufficient stock | `BusinessRuleException` |
+| | unknown customer, seller or product | `ResourceNotFoundException` |
+
+The services fetch the data a validator needs (for example the list of existing people)
+and pass it as a parameter, so validators never touch persistence. Query methods such as
+`findProductById` still return `null`, because callers use them to ask "does it exist?".
+
+### Behaviour differences to be aware of
+
+- `ProductValidator.validateProductData` rejects a price of 0 and blank titles; the old
+  check only rejected negative prices.
+- `PersonValidator.validatePersonData` requires a phone and a well-formed email, and
+  `validateUniquePerson` rejects duplicate identifications; the old code accepted both.
+- Failures that used to return `false` now throw, so the menu shows the specific message
+  from `ConsoleUI` instead of the generic "Error al ..." text.
