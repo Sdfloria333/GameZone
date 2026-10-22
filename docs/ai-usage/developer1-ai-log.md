@@ -1,6 +1,6 @@
 # AI Usage Log - Developer 1 (Product Module)
 
-## Session 1: September 5, 2026
+## Taller 1: September 5, 2026
 
 Project Development Logbook
 1. Git and Repository Setup
@@ -133,12 +133,16 @@ I also gained more experience with Git and GitHub. I learned how to work with fe
 
 Overall, this project helped me understand that software development is not only about writing code. It also involves planning, organization, version control, collaboration, documentation, and reviewing the changes made throughout the development process.
 
-## Session 2: Parcial Primer Corte — Requirements 3 (Returns) and 4 (Warranty)
+## Parcial Primer Corte — Context
 
-For this exam, the team was reassigned and I was responsible for Requirement 3
-(Returns) and Requirement 4 (Warranty) end to end — model, persistence, and
-service — plus, later, the integration of Warranty into the sales flow. I used
-Claude (Anthropic) throughout.
+For the Parcial Primer Corte exam, the team was reassigned and I was responsible
+for Requirement 3 (Returns) and Requirement 4 (Warranty) end to end — model,
+persistence, and service — plus, later, the integration of Warranty into the
+sales flow. I used Claude (Anthropic) throughout. The entries below are split
+by requirement for clarity, since several of the Git and integration issues I
+ran into surfaced specifically while working on Warranty.
+
+## Requirement 3 — Returns
 
 1. Fixing a Recurring Date Conversion Bug
 
@@ -154,7 +158,9 @@ What I learned: `toInstant()` only exists on `java.util.Date`, not on
 `LocalDate`, and once I recognized the pattern I could spot and fix it
 immediately the second time instead of debugging from scratch.
 
-2. Writing the Design Analysis Before Writing Code
+## Requirement 4 — Warranty
+
+1. Writing the Design Analysis Before Writing Code
 
 For the Warranty requirement, I first asked Claude to answer the five
 guiding design questions (`docs/warranty-analysis.md`) using only the exam
@@ -169,7 +175,7 @@ real codebase, not just the spec in isolation — an AI's first pass at a
 "why did you design it this way" answer needs to be verified once real code
 exists, not accepted at face value.
 
-3. Generating and Verifying Mermaid Class Diagrams
+2. Generating and Verifying Mermaid Class Diagrams
 
 I asked Claude to produce Mermaid class diagrams for the Warranty, Promotion,
 and Accessory modules (already merged by teammates) and later a full
@@ -184,7 +190,7 @@ What I learned: a generated diagram can look complete and still be wrong in
 small but meaningful ways; verifying it line by line against the source is
 part of the job, not optional polish.
 
-4. Discovering My Feature Branch Had Fallen Behind
+3. Discovering My Feature Branch Had Fallen Behind
 
 `feature/warranty-module` had been created before the Accessory, Promotion,
 and Return modules were merged into `develop`. By the time I went to merge
@@ -196,7 +202,7 @@ periodically during development, not only right before opening the PR —
 the longer two branches diverge, the larger and riskier the eventual merge
 becomes.
 
-5. Diagnosing a Pre-Existing Broken Merge on Develop
+4. Diagnosing a Pre-Existing Broken Merge on Develop
 
 While resolving that merge, I found that `Main.java`, `Sale.java`, and
 `ConsoleUI.java` on `develop` itself already contained leftover, partially
@@ -212,7 +218,7 @@ committed cleanly and then silently break the build for everyone downstream.
 Compiling and testing after a merge is not optional, even when Git reports
 success.
 
-6. Recovering from a Messy Local Git State
+5. Recovering from a Messy Local Git State
 
 Partway through, I ended up committing changes to `develop` instead of my
 feature branch, and later hit a `merge --abort` that Git refused to run. I
@@ -227,7 +233,7 @@ to stop guessing, make a backup pointer, and rebuild from what is on the
 remote — not to keep layering more commands on top of an already-uncertain
 state.
 
-7. Recognizing (and Justifying an Exception to) a Java Anti-Pattern
+6. Recognizing (and Justifying an Exception to) a Java Anti-Pattern
 
 `Warranty`'s constructor computes `endDate` by calling the abstract method
 `getDurationInMonths()`. Calling an overridable method from a constructor is
@@ -241,7 +247,7 @@ to check whether it actually applies to a specific case is what lets you
 follow the spec's exact requirement (compute the date in the constructor)
 without introducing a real bug.
 
-8. Resolving a Circular Dependency at Integration Time
+7. Resolving a Circular Dependency at Integration Time
 
 When I finally wired Warranty into the sales flow, `WarrantyRepository`
 needed `SaleService` to resolve sale references when loading from disk, and
@@ -255,7 +261,7 @@ What I learned: setter injection is a practical way to break a circular
 dependency between two services when constructor injection would require
 each one to exist before the other.
 
-9. Writing Project-Wide Documentation, Not Just Per-Module Docs
+8. Writing Project-Wide Documentation, Not Just Per-Module Docs
 
 Beyond the module-specific analysis and diagrams, I had a project-wide
 `README.md`, an updated inheritance hierarchy diagram, a layer diagram, and a
@@ -270,7 +276,7 @@ misleading in a different way than documentation that is simply wrong;
 marking something as "not yet connected" is more useful than pretending it
 isn't part of the design at all.
 
-10. Completing the Integration and Testing It End to End
+9. Completing the Integration and Testing It End to End
 
 Once the model, persistence, and service layers for Warranty existed, I had
 Claude implement the actual integration: the extra parameter on
@@ -287,7 +293,7 @@ works — running the actual scenario end to end caught details (like how the
 receipt should display the warranty cost) that a purely static review would
 have missed.
 
-Final Reflection
+Final Reflection — Parcial Primer Corte
 
 This part of the project pushed me further into the messier, real-world side
 of collaborative development: branches that fall behind, merges that look
@@ -321,3 +327,18 @@ testing it running, not just watching it compile.
 |---|---|---|---|---|---|---|---|
 | 2026-10-02 | Claude (Anthropic) | N/A (own finding), `fix/accessory-sale-stock` | Test the full sustentación scenario (a sale with a console, a videogame, and an accessory, plus warranty, return, and balance) before calling it done. | I asked to run the whole project end to end on `develop` to simulate the sustentación scenario. | Selling an accessory never persisted its stock: `SaleService` used the same flawed categorization pattern found in A1 (`ProductService.findProductById` also finds accessories), so the stock-reduction step called `ProductService.reduceStock`, which for an accessory ends up calling `AccessoryService.addAccessory` — a method meant to register new accessories, which rejects the id because it already exists, without saving anything. | I accepted the fix (check `instanceof Accessory` before treating the item as a regular product) and documented it as a separate finding, since it wasn't part of the A1–A9 list in Requirement 5. | `ba14f73` |
 | 2026-10-02 | Claude (Anthropic) | N/A (own finding), `fix/accessory-sale-stock` | Verify the fix introduced no regressions when selling regular products. | I asked to test, after the fix: selling an accessory (stock should drop from 10 to 9) and selling a console (stock should still drop normally, from 9 to 8). | Confirmed both cases were correct: the accessory dropped from 10 to 9 and the change persisted after restarting the process; the console still dropped from 9 to 8 with no behavior change. | With both tests passing, I closed the fix. | (verification, no additional commit) |
+
+## Requirement 6 — Validations and Exceptions
+
+| Date | Tool | Phase and branch | Objective | Query | Response | Decision | Related commit |
+|---|---|---|---|---|---|---|---|
+| 2026-10-21 | Claude (Anthropic) | `feature/exception-handling` | Answer the five orienting design questions before writing any code, as the requirement asks. | I shared the full Requirement 6 statement and asked for a first pass at the five questions (checked vs. unchecked root exception, why a typed hierarchy, where validators sit in the layers, how to preserve existing behavior, how `ConsoleMenu` should catch the four types). | Proposed unchecked (`RuntimeException`) for `GameZoneException` to avoid touching every method signature, a validators-between-service-and-model placement with no persistence access, and a single try with four specific `catch` blocks instead of one generic catch. | I reviewed each answer, agreed with the reasoning, and asked for the wording to be made more natural before committing it. | `73aa612` |
+| 2026-10-21 | Claude (Anthropic) | `feature/exception-handling` | Produce the Mermaid class diagram required before implementation, showing the exception hierarchy, the validators, and their integration with services/UI. | I asked for a diagram covering the four exception subclasses, the three validators with their methods, and how `ConsoleMenu` relates to the hierarchy for differentiated catching. | Generated a single Mermaid `classDiagram` with inheritance arrows for the exception hierarchy and dependency arrows (`..>`) showing which class throws, delegates to, or catches which other class. | Accepted as proposed. | `1efdfab` |
+| 2026-10-21 | Claude (Anthropic) | `feature/exception-handling` | Implement `GameZoneException`, the root of the new exception hierarchy, exactly as specified (unchecked, optional error code). | I asked for the class to be implemented with two constructors (message only, and message + error code) and a getter, with English JavaDoc. | Delivered `GameZoneException extends RuntimeException` with both constructors and `getErrorCode()`. | Accepted as proposed. | `27ff6d6` |
+| 2026-10-21 | Claude (Anthropic) | `feature/exception-handling` | Implement the four specialized subclasses (`ResourceNotFoundException`, `BusinessRuleException`, `InvalidDataException`, `PersistenceException`) per their individual specifications. | I asked for each subclass's exact constructor signature from the requirement, including Spanish-language message construction where specified. | Delivered the four classes, each extending `GameZoneException`, with `PersistenceException` wrapping the original cause via `initCause()` since `GameZoneException` has no cause-accepting constructor. | Accepted as proposed; verified it compiled cleanly against the rest of `develop` before sending it to me. | `e8254cb` |
+| 2026-10-21 | Claude (Anthropic) | `feature/exception-handling` | Implement `ProductValidator`, the first of the three validators. | I asked for the three methods specified (`validateProductData`, `validateStockAvailability`, `validateProductExists`) as static methods throwing the right exception type each. | Delivered a utility class (private constructor) with the three methods, importing only `com.gamezone.model.products.Product` and the exception classes — no persistence access. | Accepted as proposed. | `799e30b` |
+| 2026-10-21 | Claude (Anthropic) | `feature/exception-handling` | Implement `PersonValidator`. | I asked for `validatePersonData`, `validatePersonExists`, and `validateUniquePerson` as specified, including the basic email format check. | Delivered the class with the three static methods. | Accepted as proposed. | `2be30f4` |
+| 2026-10-21 | Claude (Anthropic) | `feature/exception-handling` | Implement `SaleValidator`, including a design decision the requirement left open. | I asked for `validateSaleData` and `validateSaleExists`, and specifically which exception type should apply when the customer/seller is null versus when the product list is empty, since the requirement only said "`BusinessRuleException` or `InvalidDataException` as appropriate" without specifying which. | Proposed `InvalidDataException` for a null customer or seller (missing required input) and `BusinessRuleException` for an empty product list, matching the requirement's own example ("a sale with no products"). | I accepted the proposed split, flagged as an assumption to revisit with the team if a different criterion is preferred. | `ff338ae` |
+| 2026-10-21 | Claude (Anthropic) | PR for `feature/exception-handling` → `develop` | Draft the Pull Request description for my branch. | I asked for a short English description, titles and bullets only, listing what the exception hierarchy, the validators, and the documentation added. | Produced a bulleted description grouped by exception hierarchy, validation layer, and documentation. | Used as-is when opening the PR. | (PR description, no additional commit) |
+| 2026-10-21 | Claude (Anthropic) | PR #42 review (`develop` → `main`) | Review the team's consolidated Requirement 6 integration PR before approving it. | I asked for a positive, humanized review of the full integrated diff (exceptions, validators, the service and repository refactor, and the `ConsoleUI` changes). | Read the actual diff and flagged one non-blocking latent issue: `ProductService.reduceStock()` still calls `AccessoryService.addAccessory()` for an existing accessory instead of `updateStock()` — currently worked around inside `SaleService`, but risky if a future caller invokes `reduceStock()` directly for an accessory. | Posted the review as a GitHub PR review/approval. | (code review, no additional commit) |
+| 2026-10-21 | Claude (Anthropic) | `feature/exception-handling` | Reorganize this log so each requirement is clearly labeled, ahead of the Requirement 7 sustentación (where I need to be able to point to my own log by requirement). | I noticed the old "Session 2" heading mixed Requirement 3 (Returns) and Requirement 4 (Warranty) together under one narrative title, unlike Requirement 5 onward which is split and titled by requirement number. I asked for it to be reorganized. | Split the original "Session 2" content into a "Requirement 3 — Returns" section and a "Requirement 4 — Warranty" section, keeping all original content and wording, moving each numbered point to the requirement it actually belongs to. | Accepted the reorganization as proposed. | (docs reorganization, see commit) |
