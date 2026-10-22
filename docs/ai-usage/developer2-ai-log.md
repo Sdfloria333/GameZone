@@ -85,9 +85,9 @@ Claude
 
 ### Assistance received from the AI
 - Review of the exception classes and validators delivered by Developer 1 to align the service changes with their exact signatures.
-- Draft of the service and repository refactoring, which the developer reviewed before committing.
+- Draft of the service and repository refactoring. The AI prepared the changes as ready-made patch files (one per commit), and the developer applied them to the repository with `git am`, reviewed the result and pushed the branches.
+- The commits therefore carry the AI co-author trailer added by the tool, so that the teacher can take it into account when they see it.
 - Explanation of why a failed write should throw instead of returning `false`, and of the risk of treating an unreadable file as an empty list.
-- Guidance on Git: creating `feature/exception-services` from the updated `develop` and keeping atomic commits.
 
 ### Technical decisions made by the developer
 - `ProductRepository`, `PersonRepository` and `SaleRepository` throw `PersistenceException` with the file path and the operation, preserving the original cause.
@@ -95,7 +95,3 @@ Claude
 - `findProductById` and the other query methods keep returning `null`; only operations that cannot continue throw.
 - `registerSale` keeps its existing pipeline and now throws `InvalidDataException`, `BusinessRuleException` or `ResourceNotFoundException` instead of returning `false`.
 - Differences with the previous behaviour (price 0, required email and phone, duplicate identifications) are documented in `docs/exception-analysis.md`.
-
-### Verification performed
-- Successful compilation of the whole project.
-- A test harness exercised duplicate customer, invalid email, duplicate product, negative price, duplicate sale, unknown customer, unknown product, insufficient stock and empty sale, and each case threw the expected exception type.
