@@ -29,3 +29,13 @@ Classes and methods reviewed, grouped by module. Classes marked *(evidence only)
 
 ### Controller
 **Not applicable.** The actual entry-point controller is `ConsoleUI`/`ConsoleMenu`, which is outside this audit's responsibility.
+
+
+### Low Coupling
+**Correct.** Every class depends only on the collaborators it genuinely needs. `ReturnService` has the most collaborators (five), but each corresponds to one real step of the return workflow — no redundant dependency was found.
+
+### High Cohesion
+**Correct, with one violation.** `ReturnService` mixes return management with sales-reporting responsibilities that do not belong to it — `calculateMonthlySales()` does not even touch the class's own `returns` data (V-05). Every other service stays focused on a single responsibility.
+
+### Polymorphism
+**Violated in four places.** `ProductService.reduceStock()` branches on the product's concrete type instead of dispatching polymorphically (V-02). The same symptom repeats in `ReturnService.registerReturn()` (V-06), and, for a different reason (Gson cannot deserialize an abstract type without a discriminator), in `PromotionRepository` (V-04) and `WarrantyRepository`/`WarrantyService` (V-07). The exceptions/validation hierarchy has no such branching; catching each exception type individually is the normal language mechanism, not a violation.
