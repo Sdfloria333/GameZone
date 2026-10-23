@@ -52,30 +52,30 @@ When the evidence of a violation in my code is visible in a class owned by anoth
 
 ## 2. Verdict summary
 
-_Partial summary: 0 of 6 modules audited so far._
+_Partial summary: 1 of 6 modules audited so far._
 
 | # | Pattern | Verdict | Violations |
 |---|---|---|---|
-| 1 | Information Expert | **pending** | — |
-| 2 | Creator | **pending** | — |
-| 3 | Controller | **pending** | — |
-| 4 | Low Coupling | **pending** | — |
-| 5 | High Cohesion | **pending** | — |
-| 6 | Polymorphism | **pending** | — |
-| 7 | Pure Fabrication | **pending** | — |
-| 8 | Indirection | **pending** | — |
-| 9 | Protected Variations | **pending** | — |
+| 1 | Information Expert | **correct** | — |
+| 2 | Creator | **correct** | — |
+| 3 | Controller | **not applicable** | — |
+| 4 | Low Coupling | **violation** | V-01 |
+| 5 | High Cohesion | **correct** | — |
+| 6 | Polymorphism | **correct** | — |
+| 7 | Pure Fabrication | **correct** | — |
+| 8 | Indirection | **correct** | — |
+| 9 | Protected Variations | **correct** | — |
 
 
 ---
 
 ## 3. Information Expert
 
-**Verdict: pending**
+**Verdict: correct**
 
 ### Persons (Taller 1)
 
-_Pending — this module has not been audited yet._
+Correct: `PersonService.findCustomerByIdentification` and `findSellerByIdentification` (lines 54-66) search the lists the service itself holds, and `registerCustomer` (lines 35-44) gathers the existing people it owns (lines 38-39) and hands them to `PersonValidator.validateUniquePerson`, which never touches persistence. `Customer.getRoleDescription` (lines 47-50) and `Seller.getRoleDescription` (lines 69-72) use their own attributes.
 
 ### Accessories (Requirement 1)
 
@@ -102,11 +102,11 @@ _Pending — this module has not been audited yet._
 
 ## 4. Creator
 
-**Verdict: pending**
+**Verdict: correct**
 
 ### Persons (Taller 1)
 
-_Pending — this module has not been audited yet._
+Correct: `PersonService` aggregates the sellers and customers, so it creates them — `preloadSellers` (lines 29-31) and `registerCustomer` (line 41, with the initializing data received). That it also creates its own repository is a coupling problem, recorded as V-01.
 
 ### Accessories (Requirement 1)
 
@@ -133,11 +133,11 @@ _Pending — this module has not been audited yet._
 
 ## 5. Controller
 
-**Verdict: pending**
+**Verdict: not applicable**
 
 ### Persons (Taller 1)
 
-_Pending — this module has not been audited yet._
+Not applicable: these services and repositories do not receive system events. The events of the console menu are received and coordinated by `ConsoleUI` (Technical Leader), which delegates to my services.
 
 ### Accessories (Requirement 1)
 
@@ -164,11 +164,11 @@ _Pending — this module has not been audited yet._
 
 ## 6. Low Coupling
 
-**Verdict: pending**
+**Verdict: violation**
 
 ### Persons (Taller 1)
 
-_Pending — this module has not been audited yet._
+The person model depends only on its own hierarchy, and `PersonRepository` only on the model, Gson and `PersistenceException`. **Violation in the `PersonService` constructor → V-01.**
 
 ### Accessories (Requirement 1)
 
@@ -190,16 +190,29 @@ _Pending — this module has not been audited yet._
 
 _Pending — this module has not been audited yet._
 
+#### V-01
+
+| Field | Content |
+|---|---|
+| **ID** | V-01 |
+| **Pattern** | Low Coupling (also related: Protected Variations) |
+| **Module** | Persons (Taller 1) |
+| **Evidence** | `PersonService` constructor, lines 18-26: `this.repository = new PersonRepository();` (line 19). The repository is created inside the service. In contrast, `AccessoryService(AccessoryRepository repository)` (lines 15-17), `PromotionService(PromotionRepository repository)` (lines 23-26) and `WarrantyService(WarrantyRepository, ...)` (lines 40-46) receive theirs, and `Main` already wires dependencies by constructor. |
+| **Explanation** | `PersonService` is tied to one concrete repository and to the way it is built; the dependency is hidden from whoever assembles the system and cannot be replaced or shared. |
+| **Consequence** | Any change in how people are stored (another location or format, or a test double for the no-regression checks) requires editing the service itself. |
+| **Proposed solution** | Apply **Low Coupling** through constructor injection: add `PersonService(PersonRepository repository)` and keep the current no-argument constructor delegating to it with `new PersonRepository()`, so `Main` keeps compiling and behaving the same (the Technical Leader may later switch `Main` to the injecting constructor). |
+| **Other member's code** | No (optional, non-blocking change in `Main` by the Technical Leader). |
+
 
 ---
 
 ## 7. High Cohesion
 
-**Verdict: pending**
+**Verdict: correct**
 
 ### Persons (Taller 1)
 
-_Pending — this module has not been audited yet._
+Correct: `PersonRepository` only reads and writes the two person files; `PersonService` keeps the person rules and delegates data validation to `PersonValidator`.
 
 ### Accessories (Requirement 1)
 
@@ -226,11 +239,11 @@ _Pending — this module has not been audited yet._
 
 ## 8. Polymorphism
 
-**Verdict: pending**
+**Verdict: correct**
 
 ### Persons (Taller 1)
 
-_Pending — this module has not been audited yet._
+Correct: `getRoleDescription()` is abstract in `Person` (line 86) and redefined by `Customer` and `Seller`; no class of the system inspects the type of a person. (The operation is currently not called by `ConsoleUI`, which prints people with getters.)
 
 ### Accessories (Requirement 1)
 
@@ -257,11 +270,11 @@ _Pending — this module has not been audited yet._
 
 ## 9. Pure Fabrication
 
-**Verdict: pending**
+**Verdict: correct**
 
 ### Persons (Taller 1)
 
-_Pending — this module has not been audited yet._
+Correct: `PersonRepository` is a fabricated class that takes JSON persistence away from `Person` (models never touch files).
 
 ### Accessories (Requirement 1)
 
@@ -288,11 +301,11 @@ _Pending — this module has not been audited yet._
 
 ## 10. Indirection
 
-**Verdict: pending**
+**Verdict: correct**
 
 ### Persons (Taller 1)
 
-_Pending — this module has not been audited yet._
+Correct: `PersonService` reaches the files only through `PersonRepository`, and `SaleService` reaches the people only through `PersonService`.
 
 ### Accessories (Requirement 1)
 
@@ -319,11 +332,11 @@ _Pending — this module has not been audited yet._
 
 ## 11. Protected Variations
 
-**Verdict: pending**
+**Verdict: correct**
 
 ### Persons (Taller 1)
 
-_Pending — this module has not been audited yet._
+Correct: the abstract `Person` keeps clients independent of the concrete kinds of person, and unique-identification checking is encapsulated in `PersonValidator.validateUniquePerson`.
 
 ### Accessories (Requirement 1)
 
