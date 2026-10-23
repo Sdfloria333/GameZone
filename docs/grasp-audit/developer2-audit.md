@@ -52,7 +52,7 @@ When the evidence of a violation in my code is visible in a class owned by anoth
 
 ## 2. Verdict summary
 
-_Partial summary: 2 of 6 modules audited so far._
+_Partial summary: 3 of 6 modules audited so far._
 
 | # | Pattern | Verdict | Violations |
 |---|---|---|---|
@@ -60,8 +60,8 @@ _Partial summary: 2 of 6 modules audited so far._
 | 2 | Creator | **correct** | — |
 | 3 | Controller | **not applicable** | — |
 | 4 | Low Coupling | **violation** | V-01 |
-| 5 | High Cohesion | **correct** | — |
-| 6 | Polymorphism | **violation** | V-02 |
+| 5 | High Cohesion | **violation** | V-04 |
+| 6 | Polymorphism | **violation** | V-02, V-03 |
 | 7 | Pure Fabrication | **correct** | — |
 | 8 | Indirection | **correct** | — |
 | 9 | Protected Variations | **correct** | — |
@@ -83,7 +83,7 @@ Correct: `AccessoryService` holds the accessory list and its repository, so it i
 
 ### Promotions (Requirement 2)
 
-_Pending — this module has not been audited yet._
+Correct: `PromotionService.findBestPromotionFor` (lines 94-114) does not compute any discount itself; it asks each promotion, the expert (`promo.calculateDiscount(sale)`, line 104), and only compares the amounts. `listActivePromotions` (lines 72-81) asks each promotion `isActive`.
 
 ### Returns (Requirement 3)
 
@@ -114,7 +114,7 @@ Correct: `AccessoryService` aggregates accessories and creates the preloaded one
 
 ### Promotions (Requirement 2)
 
-_Pending — this module has not been audited yet._
+Correct in `PromotionService`: it records the promotions and creates them in `registerPercentageDiscount` (line 32), `registerCategoryDiscount` (line 56) and `registerBulkPurchaseDiscount` (line 64). The default promotions created inside the repository are recorded under High Cohesion (V-04).
 
 ### Returns (Requirement 3)
 
@@ -145,7 +145,7 @@ Not applicable: these services and repositories do not receive system events. Th
 
 ### Promotions (Requirement 2)
 
-_Pending — this module has not been audited yet._
+Not applicable: these services and repositories do not receive system events. The events of the console menu are received and coordinated by `ConsoleUI` (Technical Leader), which delegates to my services.
 
 ### Returns (Requirement 3)
 
@@ -176,7 +176,7 @@ Correct: `AccessoryService` receives its repository by constructor (lines 15-17)
 
 ### Promotions (Requirement 2)
 
-_Pending — this module has not been audited yet._
+Correct: `PromotionService` receives its repository by constructor (lines 23-26) and works with the abstract `Promotion`; it never depends on a concrete promotion in its selection logic.
 
 ### Returns (Requirement 3)
 
@@ -208,7 +208,7 @@ _Pending — this module has not been audited yet._
 
 ## 7. High Cohesion
 
-**Verdict: correct**
+**Verdict: violation**
 
 ### Persons (Taller 1)
 
@@ -220,7 +220,7 @@ Correct: `AccessoryService` is limited to registration, queries and stock of acc
 
 ### Promotions (Requirement 2)
 
-_Pending — this module has not been audited yet._
+`PromotionService` is focused on registering, listing and selecting promotions. **Violation: `PromotionRepository` also defines and creates the store's default promotions → V-04.**
 
 ### Returns (Requirement 3)
 
@@ -233,6 +233,19 @@ _Pending — this module has not been audited yet._
 ### Exceptions and validators in services and repositories (Requirement 6)
 
 _Pending — this module has not been audited yet._
+
+#### V-04
+
+| Field | Content |
+|---|---|
+| **ID** | V-04 |
+| **Pattern** | High Cohesion (also related: Creator) |
+| **Module** | Promotions (Requirement 2) |
+| **Evidence** | `PromotionRepository.loadAll`, lines 59-65: when the file does not exist or is empty it calls `createDefaultPromotions()` and `saveAll(...)`. `createDefaultPromotions`, lines 108-131, defines the four business promotions (ids, names, percentages, dates, target categories). The other modules seed in the service: `PersonService.preloadSellers` (lines 28-33) and the `AccessoryService` constructor (lines 20-25). |
+| **Explanation** | A repository's responsibility is to read and write data. `PromotionRepository` also decides the store's initial commercial offer, and its read operation writes to disk as a side effect, so the class mixes persistence with business rules. |
+| **Consequence** | Changing the preloaded promotions (a business decision) means editing the persistence layer, and anyone calling `loadAll` may unexpectedly create the file. |
+| **Proposed solution** | Apply **High Cohesion**: move `createDefaultPromotions` to `PromotionService`. The repository exposes a query such as `hasStoredData()` (file exists and is not empty — the same condition as today) and `loadAll` only reads. The `PromotionService` constructor creates and saves the defaults when `hasStoredData()` is false. Same file content and same dates (still computed from `LocalDate.now()`). |
+| **Other member's code** | No. |
 
 
 ---
@@ -251,7 +264,7 @@ Correct: `getRoleDescription()` is abstract in `Person` (line 86) and redefined 
 
 ### Promotions (Requirement 2)
 
-_Pending — this module has not been audited yet._
+Correct in `PromotionService.findBestPromotionFor`, which calls `calculateDiscount` on the abstract type (line 104). The `switch` on the JSON `type` field in `PromotionRepository.loadAll` (lines 79-98) is accepted: it builds objects from external data, where no object exists yet to receive a polymorphic call. **Violation in `PromotionRepository.saveAll` → V-03.**
 
 ### Returns (Requirement 3)
 
@@ -278,6 +291,19 @@ _Pending — this module has not been audited yet._
 | **Proposed solution** | Apply **Polymorphism**: once the product hierarchy exposes a category operation (proposed by Developer 1, `Product.getCategory()`), filter with `a.getCategory().equalsIgnoreCase(type)`. The results for `controller`, `cable` and `memory` are the same. |
 | **Other member's code** | Yes. Developer 1 must first add `getCategory()` to the product/accessory hierarchy; then I change this method. |
 
+#### V-03
+
+| Field | Content |
+|---|---|
+| **ID** | V-03 |
+| **Pattern** | Polymorphism (also related: Protected Variations) |
+| **Module** | Promotions (Requirement 2) |
+| **Evidence** | `PromotionRepository.saveAll`, lines 38-44: `if (promo instanceof PercentageDiscount) jsonObject.addProperty("type", "PERCENTAGE"); else if (promo instanceof CategoryDiscount) ... "CATEGORY"; else if (promo instanceof BulkPurchaseDiscount) ... "BULK";`. |
+| **Explanation** | The type code varies with the subclass, so it should be answered by the hierarchy. The repository discovers it from outside with a chain of `instanceof`. |
+| **Consequence** | A fourth promotion type forces editing the repository; if the branch is forgotten, the promotion is saved without `type` and on loading it falls into the field-guessing `default` block (lines 89-97), which can rebuild it as the wrong class. |
+| **Proposed solution** | Apply **Polymorphism**: once `Promotion` declares `getTypeCode()` (Developer 1), write `jsonObject.addProperty("type", promo.getTypeCode())`. The JSON written is identical, so `promotions.json` does not change. |
+| **Other member's code** | Yes. Developer 1 adds `getTypeCode()` to `Promotion` and its subclasses first; then I change `saveAll`. |
+
 
 ---
 
@@ -295,7 +321,7 @@ Correct: `AccessoryRepository` fabricates the persistence of accessories.
 
 ### Promotions (Requirement 2)
 
-_Pending — this module has not been audited yet._
+Correct: `PromotionRepository` fabricates the persistence of promotions (its extra responsibility is recorded as V-04).
 
 ### Returns (Requirement 3)
 
@@ -326,7 +352,7 @@ Correct: `ProductService`, `SaleService` and `ReturnService` change accessory st
 
 ### Promotions (Requirement 2)
 
-_Pending — this module has not been audited yet._
+Correct: `SaleService` does not know any concrete promotion; it obtains the best one through `PromotionService.findBestPromotionFor`.
 
 ### Returns (Requirement 3)
 
@@ -357,7 +383,7 @@ Correct: `AccessoryService` works only with the abstract `Accessory`, so a new k
 
 ### Promotions (Requirement 2)
 
-_Pending — this module has not been audited yet._
+Correct: the selection of the best promotion depends only on the abstract `Promotion`; a new kind of promotion does not change `findBestPromotionFor` nor `SaleService`.
 
 ### Returns (Requirement 3)
 
