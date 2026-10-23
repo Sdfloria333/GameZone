@@ -52,16 +52,16 @@ When the evidence of a violation in my code is visible in a class owned by anoth
 
 ## 2. Verdict summary
 
-_Partial summary: 3 of 6 modules audited so far._
+_Partial summary: 4 of 6 modules audited so far._
 
 | # | Pattern | Verdict | Violations |
 |---|---|---|---|
-| 1 | Information Expert | **correct** | — |
+| 1 | Information Expert | **violation** | V-06, V-07 |
 | 2 | Creator | **correct** | — |
 | 3 | Controller | **not applicable** | — |
-| 4 | Low Coupling | **violation** | V-01 |
-| 5 | High Cohesion | **violation** | V-04 |
-| 6 | Polymorphism | **violation** | V-02, V-03 |
+| 4 | Low Coupling | **violation** | V-01, V-05 |
+| 5 | High Cohesion | **violation** | V-04; also related: V-07 |
+| 6 | Polymorphism | **violation** | V-02, V-03; also related: V-06 |
 | 7 | Pure Fabrication | **correct** | — |
 | 8 | Indirection | **correct** | — |
 | 9 | Protected Variations | **correct** | — |
@@ -71,7 +71,7 @@ _Partial summary: 3 of 6 modules audited so far._
 
 ## 3. Information Expert
 
-**Verdict: correct**
+**Verdict: violation**
 
 ### Persons (Taller 1)
 
@@ -87,7 +87,7 @@ Correct: `PromotionService.findBestPromotionFor` (lines 94-114) does not compute
 
 ### Returns (Requirement 3)
 
-_Pending — this module has not been audited yet._
+Correct in the queries over the service's own list: `viewReturnsByCustomer` (lines 144-152), `viewReturnsBySale` (lines 160-168) and `calculateMonthlyReturns` (lines 197-205); and the refund is computed by `Return` itself. **Violations: `ReturnService` decides which products have warranties → V-06; and it totals the sales, which belong to `SaleService` → V-07.**
 
 ### Warranties (Requirement 4)
 
@@ -96,6 +96,32 @@ _Pending — this module has not been audited yet._
 ### Exceptions and validators in services and repositories (Requirement 6)
 
 _Pending — this module has not been audited yet._
+
+#### V-06
+
+| Field | Content |
+|---|---|
+| **ID** | V-06 |
+| **Pattern** | Information Expert (also related: Polymorphism) |
+| **Module** | Returns (Requirement 3), integration with Warranties (Requirement 4) |
+| **Evidence** | `ReturnService.registerReturn`, lines 96-101: `for (Product product : returnedProducts) { if (product instanceof Console) { warrantyRefund += warrantyService.cancelWarranties(product.getId(), saleId); } }`. |
+| **Explanation** | `ReturnService` decides, by the type of the product, which products have warranties. The class that knows which warranties exist is `WarrantyService` (it holds them): `cancelWarranties` (lines 139-158) already searches by product and sale, returns `0.0` and saves nothing when there is none. The rule "only consoles get warranties" is duplicated from `SaleService.registerSale` (line 98). |
+| **Consequence** | If warranties are ever offered for other products, returns would not cancel them and the refund would be wrong, and nobody would notice because the rule lives in two places. |
+| **Proposed solution** | Apply **Information Expert**: call `warrantyService.cancelWarranties(product.getId(), saleId)` for every returned product and let the expert answer; remove the `Console` check and import. Today only consoles have warranties, so refunds, receipts and `warranties.json` stay identical. |
+| **Other member's code** | No. |
+
+#### V-07
+
+| Field | Content |
+|---|---|
+| **ID** | V-07 |
+| **Pattern** | Information Expert (also related: High Cohesion) |
+| **Module** | Returns (Requirement 3) — monthly balance |
+| **Evidence** | `ReturnService.calculateMonthlySales`, lines 178-187, walks `saleService.listSales()` and adds `sale.getTotal()` for the given month. `ConsoleUI` asks the returns service for the sales total (line 684). |
+| **Explanation** | The information needed to total the sales of a month (the list of sales) belongs to `SaleService`, which is the expert. `ReturnService` should only total its own returns (`calculateMonthlyReturns`, lines 197-205, is correct) and combine both figures. |
+| **Consequence** | Any change in what counts as a month's sales (for example excluding cancelled sales) would have to be made in the returns module, and `ReturnService` grows with responsibilities that are not about returns. |
+| **Proposed solution** | Apply **Information Expert**: add `calculateMonthlySales(int month, int year)` to `SaleService` with the same loop; `ReturnService.calculateMonthlySales` delegates to it (keeping its signature, so `ConsoleUI` does not change). The figures are summed in the same order, so the output is identical. |
+| **Other member's code** | Yes. Technical Leader: new method in `SaleService`. |
 
 
 ---
@@ -118,7 +144,7 @@ Correct in `PromotionService`: it records the promotions and creates them in `re
 
 ### Returns (Requirement 3)
 
-_Pending — this module has not been audited yet._
+Correct: `ReturnService` records the returns and creates them (line 104); `ReturnRepository` creates each `ReturnRecord` (lines 76-90) and rebuilds each `Return` from the stored data it holds (lines 145-147).
 
 ### Warranties (Requirement 4)
 
@@ -149,7 +175,7 @@ Not applicable: these services and repositories do not receive system events. Th
 
 ### Returns (Requirement 3)
 
-_Pending — this module has not been audited yet._
+Not applicable: these services and repositories do not receive system events. The events of the console menu are received and coordinated by `ConsoleUI` (Technical Leader), which delegates to my services.
 
 ### Warranties (Requirement 4)
 
@@ -180,7 +206,7 @@ Correct: `PromotionService` receives its repository by constructor (lines 23-26)
 
 ### Returns (Requirement 3)
 
-_Pending — this module has not been audited yet._
+`ReturnService` depends on the services it really needs (sales, products, accessories, warranties) through its constructor (lines 36-45). **Violation: `ReturnRepository` depends on three services → V-05.**
 
 ### Warranties (Requirement 4)
 
@@ -203,6 +229,19 @@ _Pending — this module has not been audited yet._
 | **Proposed solution** | Apply **Low Coupling** through constructor injection: add `PersonService(PersonRepository repository)` and keep the current no-argument constructor delegating to it with `new PersonRepository()`, so `Main` keeps compiling and behaving the same (the Technical Leader may later switch `Main` to the injecting constructor). |
 | **Other member's code** | No (optional, non-blocking change in `Main` by the Technical Leader). |
 
+#### V-05
+
+| Field | Content |
+|---|---|
+| **ID** | V-05 |
+| **Pattern** | Low Coupling (also related: Indirection) |
+| **Module** | Returns (Requirement 3) |
+| **Evidence** | `ReturnRepository` imports `SaleService`, `ProductService` and `AccessoryService` (lines 6-8), keeps them as fields (lines 32-34), receives them in the constructor (lines 44-49) and calls them in `loadAll`: `saleService.findSaleById` (line 129), `accessoryService.findById` (line 136), `productService.findProductById` (line 138). |
+| **Explanation** | A persistence class depends on the service layer, against the dependency direction required by the architecture (`ui` → `service` → `persistence` → `model`). The same problem was already corrected for `WarrantyRepository` in Requirement 4 (commit `4ae27da`), but not here. |
+| **Consequence** | The repository cannot be built without the whole service graph, `Main` must create it after `SaleService`, and any change in a service constructor or lookup method reaches the persistence layer. It also opens the door to circular dependencies like the one already suffered with warranties. |
+| **Proposed solution** | Apply **Low Coupling** with the same design used for warranties: `ReturnRepository` gets a no-argument constructor, `ReturnRecord` becomes a public static class with getters, and `loadAll` returns the records (identifiers only). `ReturnService` resolves sales and products from the records, keeping the current order (accessory first, then product) and the same skipping rules. `returns.json` does not change. |
+| **Other member's code** | Yes. Technical Leader: `Main`, line 36, must build `new ReturnRepository()` instead of passing the three services. |
+
 
 ---
 
@@ -224,7 +263,7 @@ Correct: `AccessoryService` is limited to registration, queries and stock of acc
 
 ### Returns (Requirement 3)
 
-_Pending — this module has not been audited yet._
+Registering and querying returns is cohesive, but `ReturnService` also totals the month's sales; it is recorded once under Information Expert as **V-07**.
 
 ### Warranties (Requirement 4)
 
@@ -268,7 +307,7 @@ Correct in `PromotionService.findBestPromotionFor`, which calls `calculateDiscou
 
 ### Returns (Requirement 3)
 
-_Pending — this module has not been audited yet._
+`ReturnService.registerReturn` checks `instanceof Console` to decide whether to cancel warranties (lines 96-101); recorded once under Information Expert as **V-06**.
 
 ### Warranties (Requirement 4)
 
@@ -325,7 +364,7 @@ Correct: `PromotionRepository` fabricates the persistence of promotions (its ext
 
 ### Returns (Requirement 3)
 
-_Pending — this module has not been audited yet._
+Correct: `ReturnRepository.ReturnRecord` (lines 55-63) is a fabricated, id-only representation that keeps object references out of the JSON file.
 
 ### Warranties (Requirement 4)
 
@@ -356,7 +395,7 @@ Correct: `SaleService` does not know any concrete promotion; it obtains the best
 
 ### Returns (Requirement 3)
 
-_Pending — this module has not been audited yet._
+Correct: `ReturnService` cancels warranties through `WarrantyService` and restores stock through `ProductService`/`AccessoryService`. The missing indirection between `ReturnRepository` and the services is recorded as V-05.
 
 ### Warranties (Requirement 4)
 
@@ -387,7 +426,7 @@ Correct: the selection of the best promotion depends only on the abstract `Promo
 
 ### Returns (Requirement 3)
 
-_Pending — this module has not been audited yet._
+Correct: the 30-day rule is asked to `Sale.canBeReturned()` (line 64) and the refund to `Return`, so `ReturnService` is protected from changes in those rules.
 
 ### Warranties (Requirement 4)
 
