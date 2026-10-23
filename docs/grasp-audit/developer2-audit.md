@@ -52,7 +52,7 @@ When the evidence of a violation in my code is visible in a class owned by anoth
 
 ## 2. Verdict summary
 
-_Partial summary: 4 of 6 modules audited so far._
+_Partial summary: 5 of 6 modules audited so far._
 
 | # | Pattern | Verdict | Violations |
 |---|---|---|---|
@@ -61,7 +61,7 @@ _Partial summary: 4 of 6 modules audited so far._
 | 3 | Controller | **not applicable** | — |
 | 4 | Low Coupling | **violation** | V-01, V-05 |
 | 5 | High Cohesion | **violation** | V-04; also related: V-07 |
-| 6 | Polymorphism | **violation** | V-02, V-03; also related: V-06 |
+| 6 | Polymorphism | **violation** | V-02, V-03, V-08; also related: V-06 |
 | 7 | Pure Fabrication | **correct** | — |
 | 8 | Indirection | **correct** | — |
 | 9 | Protected Variations | **correct** | — |
@@ -91,7 +91,7 @@ Correct in the queries over the service's own list: `viewReturnsByCustomer` (lin
 
 ### Warranties (Requirement 4)
 
-_Pending — this module has not been audited yet._
+Correct: `WarrantyService` holds the warranties, so it answers `findWarrantyByProduct` (lines 119-127), `cancelWarranties` (lines 139-158) and `listWarrantiesExpiringSoon` (lines 193-205); validity is delegated to each warranty (`w.isActive(today)`, line 179).
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
@@ -148,7 +148,7 @@ Correct: `ReturnService` records the returns and creates them (line 104); `Retur
 
 ### Warranties (Requirement 4)
 
-_Pending — this module has not been audited yet._
+Correct: `WarrantyService` records the warranties and creates them in `assignBasicWarranty` (line 89), `assignExtendedWarranty` (line 105) and `resolveRecords` (lines 69-73); `WarrantyRepository.saveAll` creates the `WarrantyRecord`s it writes (lines 81-86).
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
@@ -179,7 +179,7 @@ Not applicable: these services and repositories do not receive system events. Th
 
 ### Warranties (Requirement 4)
 
-_Pending — this module has not been audited yet._
+Not applicable: these services and repositories do not receive system events. The events of the console menu are received and coordinated by `ConsoleUI` (Technical Leader), which delegates to my services.
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
@@ -210,7 +210,7 @@ Correct: `PromotionService` receives its repository by constructor (lines 23-26)
 
 ### Warranties (Requirement 4)
 
-_Pending — this module has not been audited yet._
+Correct: `WarrantyRepository` has no dependency on services (its records keep identifiers only, lines 31-70). `WarrantyService` depends on `SaleRepository` instead of `SaleService` (lines 28 and 58) on purpose: `SaleService` already depends on `WarrantyService`, and this choice removed the circular dependency corrected in Requirement 4. It is an accepted, documented trade-off.
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
@@ -267,7 +267,7 @@ Registering and querying returns is cohesive, but `ReturnService` also totals th
 
 ### Warranties (Requirement 4)
 
-_Pending — this module has not been audited yet._
+Correct: `WarrantyService` only assigns, resolves, cancels and queries warranties; `WarrantyRepository` only handles the warranties file.
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
@@ -311,7 +311,7 @@ Correct in `PromotionService.findBestPromotionFor`, which calls `calculateDiscou
 
 ### Warranties (Requirement 4)
 
-_Pending — this module has not been audited yet._
+Correct in `WarrantyService`, which uses `getAdditionalCost()` (line 148) and `isActive()` (line 179) on the abstract `Warranty`; `resolveRecords` (lines 69-73) chooses the class from the stored type, which is accepted for the same reason as `PromotionRepository.loadAll`. **Violation in `WarrantyRepository.saveAll` → V-08.**
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
@@ -343,6 +343,19 @@ _Pending — this module has not been audited yet._
 | **Proposed solution** | Apply **Polymorphism**: once `Promotion` declares `getTypeCode()` (Developer 1), write `jsonObject.addProperty("type", promo.getTypeCode())`. The JSON written is identical, so `promotions.json` does not change. |
 | **Other member's code** | Yes. Developer 1 adds `getTypeCode()` to `Promotion` and its subclasses first; then I change `saveAll`. |
 
+#### V-08
+
+| Field | Content |
+|---|---|
+| **ID** | V-08 |
+| **Pattern** | Polymorphism (also related: Protected Variations) |
+| **Module** | Warranties (Requirement 4) |
+| **Evidence** | `WarrantyRepository.saveAll`, line 83: `(w instanceof BasicWarranty) ? "BASIC" : "EXTENDED"`. |
+| **Explanation** | The type code varies with the subclass but is decided from outside the hierarchy, and the ternary assumes that every warranty that is not basic is extended. |
+| **Consequence** | A third warranty type would be silently saved as `"EXTENDED"` and reloaded by `WarrantyService.resolveRecords` (lines 69-73) as an `ExtendedWarranty`, with the wrong duration and cost. |
+| **Proposed solution** | Apply **Polymorphism**: once `Warranty` declares `getTypeCode()` (Developer 1), write `w.getTypeCode()`. `warranties.json` keeps the same content. |
+| **Other member's code** | Yes. Developer 1 adds `getTypeCode()` to the warranty hierarchy first; then I change `saveAll`. |
+
 
 ---
 
@@ -368,7 +381,7 @@ Correct: `ReturnRepository.ReturnRecord` (lines 55-63) is a fabricated, id-only 
 
 ### Warranties (Requirement 4)
 
-_Pending — this module has not been audited yet._
+Correct: `WarrantyRepository.WarrantyRecord` (lines 31-70) is a fabricated, id-only record, which is what allowed `WarrantyRepository` to drop its service dependencies.
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
@@ -399,7 +412,7 @@ Correct: `ReturnService` cancels warranties through `WarrantyService` and restor
 
 ### Warranties (Requirement 4)
 
-_Pending — this module has not been audited yet._
+Correct: `WarrantyRecord` acts as the intermediary that keeps `WarrantyRepository` independent from sales and products.
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
@@ -430,7 +443,7 @@ Correct: the 30-day rule is asked to `Sale.canBeReturned()` (line 64) and the re
 
 ### Warranties (Requirement 4)
 
-_Pending — this module has not been audited yet._
+Correct: duration and cost are asked to each warranty, so `WarrantyService` is protected from changes in the concrete warranty rules.
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
