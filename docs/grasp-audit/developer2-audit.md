@@ -52,8 +52,6 @@ When the evidence of a violation in my code is visible in a class owned by anoth
 
 ## 2. Verdict summary
 
-_Partial summary: 5 of 6 modules audited so far._
-
 | # | Pattern | Verdict | Violations |
 |---|---|---|---|
 | 1 | Information Expert | **violation** | V-06, V-07 |
@@ -62,7 +60,7 @@ _Partial summary: 5 of 6 modules audited so far._
 | 4 | Low Coupling | **violation** | V-01, V-05 |
 | 5 | High Cohesion | **violation** | V-04; also related: V-07 |
 | 6 | Polymorphism | **violation** | V-02, V-03, V-08; also related: V-06 |
-| 7 | Pure Fabrication | **correct** | — |
+| 7 | Pure Fabrication | **violation** | V-09 |
 | 8 | Indirection | **correct** | — |
 | 9 | Protected Variations | **correct** | — |
 
@@ -95,7 +93,7 @@ Correct: `WarrantyService` holds the warranties, so it answers `findWarrantyByPr
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
-_Pending — this module has not been audited yet._
+Correct: `PersonService.registerCustomer` gives `PersonValidator` the data it needs (lines 36 and 40), and `PersonRepository` wraps file errors with the path it knows (lines 54 and 67).
 
 #### V-06
 
@@ -152,7 +150,7 @@ Correct: `WarrantyService` records the warranties and creates them in `assignBas
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
-_Pending — this module has not been audited yet._
+Correct: `PersonRepository` creates the `PersistenceException` it throws, because it holds the path and the original cause (lines 54 and 67); `PersonService` delegates the creation of validation exceptions to `PersonValidator`.
 
 
 ---
@@ -183,7 +181,7 @@ Not applicable: these services and repositories do not receive system events. Th
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
-_Pending — this module has not been audited yet._
+Not applicable: these services and repositories do not receive system events. The events of the console menu are received and coordinated by `ConsoleUI` (Technical Leader), which delegates to my services.
 
 
 ---
@@ -214,7 +212,7 @@ Correct: `WarrantyRepository` has no dependency on services (its records keep id
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
-_Pending — this module has not been audited yet._
+Correct: services call the validators as static utilities, and validators never depend on repositories or services.
 
 #### V-01
 
@@ -271,7 +269,7 @@ Correct: `WarrantyService` only assigns, resolves, cancels and queries warrantie
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
-_Pending — this module has not been audited yet._
+Correct: validation lives in the validators and not inline in `PersonService` (lines 36 and 40).
 
 #### V-04
 
@@ -315,7 +313,7 @@ Correct in `WarrantyService`, which uses `getAdditionalCost()` (line 148) and `i
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
-_Pending — this module has not been audited yet._
+Not applicable: there is no variant behaviour by type in the way my services and repositories throw or handle errors.
 
 #### V-02
 
@@ -361,7 +359,7 @@ _Pending — this module has not been audited yet._
 
 ## 9. Pure Fabrication
 
-**Verdict: correct**
+**Verdict: violation**
 
 ### Persons (Taller 1)
 
@@ -385,7 +383,20 @@ Correct: `WarrantyRepository.WarrantyRecord` (lines 31-70) is a fabricated, id-o
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
-_Pending — this module has not been audited yet._
+`PersonService` uses the fabricated `PersonValidator` correctly. **Violation: the file-access code is copied in every repository instead of living in one fabricated class → V-09.**
+
+#### V-09
+
+| Field | Content |
+|---|---|
+| **ID** | V-09 |
+| **Pattern** | Pure Fabrication (also related: Protected Variations) |
+| **Module** | Exceptions and validators in services and repositories (Requirement 6) — all my repositories |
+| **Evidence** | Each of my five repositories repeats the same file-access code: a hard-coded `"src/main/data/..."` path, its own `Gson` instance, `new File(path)`, `getParentFile().mkdirs()`, `FileWriter`/`FileReader` and the error handling. `PersonRepository` lines 21-23 and 45-69; `AccessoryRepository` lines 18-19 and 29-66; `PromotionRepository` lines 16-25, 27-54 and 56-105; `ReturnRepository` lines 29-30, 93-103 and 114-151; `WarrantyRepository` lines 24-25, 89-98 and 106-118. |
+| **Explanation** | Reading and writing JSON files is a technical responsibility that does not belong to any domain concept; it should live once in a fabricated class. Instead it is copied in every repository. |
+| **Consequence** | Changing the data folder, the encoding or the Gson configuration means editing every repository. The copies have already drifted: after Requirement 6, `PersonRepository` throws `PersistenceException` while the other four still swallow the error (see section 12.3). |
+| **Proposed solution** | Apply **Pure Fabrication**: create `persistence.JsonFileStorage` with the shared operations (write a list to a path, read a path with a `Type`, check whether the file has data), using the same Gson configuration. Each repository delegates to it and keeps exactly its current error behaviour (each one still decides whether to throw or to return `false`/an empty list), so files and messages stay the same. |
+| **Other member's code** | No. (`ProductRepository` — Developer 1 — and `SaleRepository` — Technical Leader — have the same copy and could reuse the class, optionally.) |
 
 
 ---
@@ -416,7 +427,7 @@ Correct: `WarrantyRecord` acts as the intermediary that keeps `WarrantyRepositor
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
-_Pending — this module has not been audited yet._
+Correct: `PersonService` raises validation errors through `PersonValidator`, and `PersonRepository` hides `IOException`/`JsonParseException` behind `PersistenceException`.
 
 
 ---
@@ -447,4 +458,37 @@ Correct: duration and cost are asked to each warranty, so `WarrantyService` is p
 
 ### Exceptions and validators in services and repositories (Requirement 6)
 
-_Pending — this module has not been audited yet._
+Correct in the persons module: `PersonRepository` and `PersonService` use the `GameZoneException` hierarchy, so `ConsoleUI` handles their errors by category. The modules that still do not use it are listed in section 12.3, because aligning them would change what the user sees.
+
+
+---
+
+## 12. Items reported to the Technical Leader
+
+### 12.1 Boundary findings (my code + another member's code)
+
+| My ID | Other member | Their part of the correction | Order |
+|---|---|---|---|
+| V-02 | Developer 1 | Add `getCategory()` to the product/accessory hierarchy. | Developer 1 first, then me. |
+| V-03 | Developer 1 | Add `getTypeCode()` to `Promotion` and its subclasses. | Developer 1 first, then me. |
+| V-05 | Technical Leader | `Main` line 36: `new ReturnRepository()`. | Same commit sequence: my change in `ReturnRepository`/`ReturnService` and the Leader's line in `Main` must be pushed together so `develop` compiles. |
+| V-07 | Technical Leader | Add `SaleService.calculateMonthlySales(int, int)`. | Leader first, then me. |
+| V-08 | Developer 1 | Add `getTypeCode()` to `Warranty` and its subclasses. | Developer 1 first, then me. |
+
+### 12.2 Related code of other members
+
+- `PromotionService.VALID_CATEGORIES` (my code, line 18) repeats the category names `VIDEOGAME`, `CONSOLE`, `ACCESSORY`. If Developer 1 adds `getCategory()` to the product hierarchy, this list should be reviewed in the same consolidated finding.
+- `ProductRepository` (Developer 1) and `SaleRepository` (Technical Leader) contain the same file-access copy described in V-09.
+
+### 12.3 Out-of-scope findings (functional defects / changes visible to the user)
+
+| # | Finding | Evidence | Why it is not corrected now |
+|---|---|---|---|
+| 1 | **Duplicated warranty ids.** New ids are `"W" + (warranties.size() + 1)`, but `cancelWarranties` removes warranties from the list. After a return cancels one warranty, the next sale can receive an id that already exists. | `WarrantyService` lines 88, 104 and 139-158. | Fixing it changes the ids shown in the warranty listings and saved in `warranties.json`. |
+| 2 | **Requirement 6 not applied in four modules.** The repositories swallow I/O errors and return `false` or an empty list, the services return `false` instead of typed exceptions, and returns use `IllegalArgumentException` outside the `GameZoneException` hierarchy. | `AccessoryRepository` 37-39, 63-65; `PromotionRepository` 51-53, 100-102; `ReturnRepository` 101-103, 149-151; `WarrantyRepository` 96-98, 115-117; `AccessoryService.addAccessory` 46-56; `PromotionService.register*` 28-66; `ReturnService.registerReturn` 58-93 (caught by `ConsoleUI` line 629). | Throwing the typed exceptions changes the messages printed by the menu (for example "Error al registrar accesorio." would become the generic business-rule message). |
+| 3 | **Accessory id can repeat a console or videogame id.** `AccessoryService.addAccessory` checks duplicates only among accessories, and `ProductService.findProductById` then returns the console first. | `AccessoryService` line 51; `ProductService.findProductById` lines 71-88. | Rejecting those ids would change the result of registering an accessory. |
+| 4 | **Accessory subtype recognized by the presence of a field.** Renaming `connectionType`, `connectorType` or `memoryType` would make accessories disappear on load. | `AccessoryRepository.loadFromFile` lines 54-60. | The robust fix (writing an explicit `type`) changes the content of `accessories.json`. |
+
+### 12.4 Observations (not GRASP violations)
+
+- Public methods with no caller in the system: `AccessoryService.registerController`, `registerCable`, `registerMemory` (lines 34-44), `hasEnoughStock` (lines 84-87) and `listAccessoriesByType` (lines 62-66); `Person.getRoleDescription` is implemented but `ConsoleUI` does not use it.
