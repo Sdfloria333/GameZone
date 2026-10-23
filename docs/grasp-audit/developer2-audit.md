@@ -52,7 +52,7 @@ When the evidence of a violation in my code is visible in a class owned by anoth
 
 ## 2. Verdict summary
 
-_Partial summary: 1 of 6 modules audited so far._
+_Partial summary: 2 of 6 modules audited so far._
 
 | # | Pattern | Verdict | Violations |
 |---|---|---|---|
@@ -61,7 +61,7 @@ _Partial summary: 1 of 6 modules audited so far._
 | 3 | Controller | **not applicable** | — |
 | 4 | Low Coupling | **violation** | V-01 |
 | 5 | High Cohesion | **correct** | — |
-| 6 | Polymorphism | **correct** | — |
+| 6 | Polymorphism | **violation** | V-02 |
 | 7 | Pure Fabrication | **correct** | — |
 | 8 | Indirection | **correct** | — |
 | 9 | Protected Variations | **correct** | — |
@@ -79,7 +79,7 @@ Correct: `PersonService.findCustomerByIdentification` and `findSellerByIdentific
 
 ### Accessories (Requirement 1)
 
-_Pending — this module has not been audited yet._
+Correct: `AccessoryService` holds the accessory list and its repository, so it is the expert for lookups (`findById`, lines 68-75; `findByConsole`, lines 77-81) and for accessory stock (`updateStock`, lines 89-96; `restoreStock`, lines 108-115), which other classes delegate to it.
 
 ### Promotions (Requirement 2)
 
@@ -110,7 +110,7 @@ Correct: `PersonService` aggregates the sellers and customers, so it creates the
 
 ### Accessories (Requirement 1)
 
-_Pending — this module has not been audited yet._
+Correct: `AccessoryService` aggregates accessories and creates the preloaded ones (lines 21-23); `AccessoryRepository.loadFromFile` (lines 51-61) creates the concrete accessories because it holds the initializing data read from the file.
 
 ### Promotions (Requirement 2)
 
@@ -141,7 +141,7 @@ Not applicable: these services and repositories do not receive system events. Th
 
 ### Accessories (Requirement 1)
 
-_Pending — this module has not been audited yet._
+Not applicable: these services and repositories do not receive system events. The events of the console menu are received and coordinated by `ConsoleUI` (Technical Leader), which delegates to my services.
 
 ### Promotions (Requirement 2)
 
@@ -172,7 +172,7 @@ The person model depends only on its own hierarchy, and `PersonRepository` only 
 
 ### Accessories (Requirement 1)
 
-_Pending — this module has not been audited yet._
+Correct: `AccessoryService` receives its repository by constructor (lines 15-17), and `AccessoryRepository` depends only on the accessory model and Gson.
 
 ### Promotions (Requirement 2)
 
@@ -216,7 +216,7 @@ Correct: `PersonRepository` only reads and writes the two person files; `PersonS
 
 ### Accessories (Requirement 1)
 
-_Pending — this module has not been audited yet._
+Correct: `AccessoryService` is limited to registration, queries and stock of accessories; `AccessoryRepository` only to the accessories file.
 
 ### Promotions (Requirement 2)
 
@@ -239,7 +239,7 @@ _Pending — this module has not been audited yet._
 
 ## 8. Polymorphism
 
-**Verdict: correct**
+**Verdict: violation**
 
 ### Persons (Taller 1)
 
@@ -247,7 +247,7 @@ Correct: `getRoleDescription()` is abstract in `Person` (line 86) and redefined 
 
 ### Accessories (Requirement 1)
 
-_Pending — this module has not been audited yet._
+`AccessoryService` works with the abstract `Accessory` in every method except one. **Violation in `listAccessoriesByType` → V-02.**
 
 ### Promotions (Requirement 2)
 
@@ -265,6 +265,19 @@ _Pending — this module has not been audited yet._
 
 _Pending — this module has not been audited yet._
 
+#### V-02
+
+| Field | Content |
+|---|---|
+| **ID** | V-02 |
+| **Pattern** | Polymorphism (also related: Protected Variations) |
+| **Module** | Accessories (Requirement 1) |
+| **Evidence** | `AccessoryService.listAccessoriesByType`, lines 62-66: `.filter(a -> a.getClass().getSimpleName().equalsIgnoreCase(type))` (line 64). |
+| **Explanation** | The accessory type is resolved by asking for the Java class name instead of asking the object polymorphically. The business category becomes coupled to an implementation detail (the class name). |
+| **Consequence** | Renaming or adding an accessory class silently changes the results of the filter. The method is not called by any class today, so it is a latent problem, but it is part of the public API of the service. |
+| **Proposed solution** | Apply **Polymorphism**: once the product hierarchy exposes a category operation (proposed by Developer 1, `Product.getCategory()`), filter with `a.getCategory().equalsIgnoreCase(type)`. The results for `controller`, `cable` and `memory` are the same. |
+| **Other member's code** | Yes. Developer 1 must first add `getCategory()` to the product/accessory hierarchy; then I change this method. |
+
 
 ---
 
@@ -278,7 +291,7 @@ Correct: `PersonRepository` is a fabricated class that takes JSON persistence aw
 
 ### Accessories (Requirement 1)
 
-_Pending — this module has not been audited yet._
+Correct: `AccessoryRepository` fabricates the persistence of accessories.
 
 ### Promotions (Requirement 2)
 
@@ -309,7 +322,7 @@ Correct: `PersonService` reaches the files only through `PersonRepository`, and 
 
 ### Accessories (Requirement 1)
 
-_Pending — this module has not been audited yet._
+Correct: `ProductService`, `SaleService` and `ReturnService` change accessory stock only through `AccessoryService`.
 
 ### Promotions (Requirement 2)
 
@@ -340,7 +353,7 @@ Correct: the abstract `Person` keeps clients independent of the concrete kinds o
 
 ### Accessories (Requirement 1)
 
-_Pending — this module has not been audited yet._
+Correct: `AccessoryService` works only with the abstract `Accessory`, so a new kind of accessory does not change its stock logic. (How `AccessoryRepository` recognizes the subtype is discussed in section 12.3.)
 
 ### Promotions (Requirement 2)
 
