@@ -18,3 +18,14 @@ Classes and methods reviewed, grouped by module. Classes marked *(evidence only)
 | Exceptions / Validation | Requerimiento 6 (own implementation) | `GameZoneException` and its 4 subclasses; `ProductValidator`, `PersonValidator`, `SaleValidator` |
 
 **Explicitly out of scope** for this audit (another developer's responsibility; referenced only as evidence where a finding crosses the boundary): `ConsoleUI`/`ConsoleMenu`, `SaleService`, `Sale` (beyond `canBeReturned()`), `PersonService`, `AccessoryService`'s and `AccessoryRepository`'s own internal design.
+
+## 2. Pattern-by-Pattern Verdicts
+
+### Information Expert
+**Correct across all audited modules.** Every class that computes something uses only its own data or data explicitly given to it: `Return.calculateRefundAmount()`, `Sale.canBeReturned()`, each `Warranty` subclass's `getAdditionalCost()`, each `Promotion` subclass's `calculateDiscount()`. The exceptions/validation classes are intentionally stateless utilities, so this pattern does not directly apply to them.
+
+### Creator
+**Mixed.** Correct in Promotion (`PromotionService` creates all three discount types) and in Warranty (`WarrantyService` creates both warranty types) and in Return/Exceptions (the service/validator that detects the need creates the object). **Violated** in Product and Accessory: `ConsoleUI` constructs `Console`/`Videogame`/`Controller`/`Cable`/`Memory` directly instead of delegating to the corresponding service (V-01, V-03).
+
+### Controller
+**Not applicable.** The actual entry-point controller is `ConsoleUI`/`ConsoleMenu`, which is outside this audit's responsibility.
