@@ -95,3 +95,8 @@ Claude
 - `findProductById` and the other query methods keep returning `null`; only operations that cannot continue throw.
 - `registerSale` keeps its existing pipeline and now throws `InvalidDataException`, `BusinessRuleException` or `ResourceNotFoundException` instead of returning `false`.
 - Differences with the previous behaviour (price 0, required email and phone, duplicate identifications) are documented in `docs/exception-analysis.md`.
+
+## Requirement 7
+
+### Phase 1
+- No use of AI
