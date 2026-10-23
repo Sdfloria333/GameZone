@@ -39,3 +39,13 @@ Classes and methods reviewed, grouped by module. Classes marked *(evidence only)
 
 ### Polymorphism
 **Violated in four places.** `ProductService.reduceStock()` branches on the product's concrete type instead of dispatching polymorphically (V-02). The same symptom repeats in `ReturnService.registerReturn()` (V-06), and, for a different reason (Gson cannot deserialize an abstract type without a discriminator), in `PromotionRepository` (V-04) and `WarrantyRepository`/`WarrantyService` (V-07). The exceptions/validation hierarchy has no such branching; catching each exception type individually is the normal language mechanism, not a violation.
+
+
+### Pure Fabrication
+**Correct, and the validation layer is the clearest example in the whole system.** All five repositories are textbook Pure Fabrication. `ProductValidator`/`PersonValidator`/`SaleValidator` were created specifically to hold a responsibility (validation) that does not belong to any single domain object.
+
+### Indirection
+**Correct where it appears.** `ReturnRepository.ReturnRecord` and `WarrantyRepository.WarrantyRecord` are lightweight DTOs that decouple the domain objects (which hold full `Sale`/`Product` references) from the JSON persistence format. The validators act as indirection between services and the model for validation logic.
+
+### Protected Variations
+**Violated wherever Polymorphism was violated (same root cause, not counted separately).** Adding a new concrete `Product`, `Accessory`, `Promotion`, or `Warranty` type currently requires editing existing conditional logic in `ProductService`, `ReturnService`, `PromotionRepository`, or `WarrantyRepository`/`WarrantyService` — exactly what this pattern is meant to prevent. The exceptions/validation hierarchy is correctly protected: a new error category or validation rule needs no change to existing classes.
